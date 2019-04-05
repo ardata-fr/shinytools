@@ -175,3 +175,15 @@ html_addclass <- function(id, classname){
   )
 }
 
+#' @export
+onclick <- function(id){
+  event_id <- paste0(id, "_clicked")
+
+  fun <- paste0("$(function() {",
+         sprintf("var %s = 0;", event_id),
+         sprintf("$('#%s').click(function(e) {", id),
+         sprintf("%s = %s+1;", event_id, event_id),
+         sprintf("Shiny.onInputChange('%s', %s);", event_id, event_id),
+         "});});")
+  tags$head(tags$script(HTML(fun)))
+}
