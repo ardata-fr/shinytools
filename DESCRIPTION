@@ -1,0 +1,18 @@
+Package: dgihesse
+Type: Package
+Title: Simple 'JavaScript' Interactions in 'shiny' Applications
+Version: 0.0.1
+Authors@R: c(
+    person("David", "Gohel", role = c("aut", "cre"),
+      email = "david.gohel@ardata.fr"), 
+    person("Quentin", "Fazilleau", role = c("ctb"),
+      email = "quentin.fazilleau@ardata.fr")
+      )
+Description: Provides few functions to interact from a `shiny` 
+ application with HTML elements. The primary goal of the package 
+ is to provide disable and enable functions on shiny input elements.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: htmltools, shiny
+RoxygenNote: 6.1.1
