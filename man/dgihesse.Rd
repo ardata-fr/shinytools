@@ -3,7 +3,7 @@
 \name{load_dgihesse}
 \alias{load_dgihesse}
 \alias{toogle}
-\alias{disabled}
+\alias{switch_validity}
 \alias{set_active}
 \alias{html_unclass}
 \alias{html_addclass}
@@ -13,7 +13,7 @@ load_dgihesse()
 
 toogle(id)
 
-disabled(id, state)
+switch_validity(id, state)
 
 set_active(id, state)
 
@@ -65,6 +65,7 @@ with function \code{html_addclass}.
 }
 
 \examples{
+\dontrun{
 library(dgihesse)
 library(shinyWidgets)
 classes <- c("primary", "secondary",
@@ -129,6 +130,6 @@ if (interactive()) {
 
   print(shinyApp(ui, server))
 }
-
+}
 
 }

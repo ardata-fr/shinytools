@@ -3,6 +3,7 @@
 #' @description get dgihesse javascript dependancy suitable
 #' for insertion in the \code{ui} part of a shiny application.
 #' @examples
+#' \dontrun{
 #' library(dgihesse)
 #' library(shinyWidgets)
 #' classes <- c("primary", "secondary",
@@ -67,7 +68,7 @@
 #'
 #'   print(shinyApp(ui, server))
 #' }
-#'
+#' }
 #'
 #' @rdname dgihesse
 #' @export
@@ -102,8 +103,12 @@ toogle <- function(id){
 #'
 #' if state is \code{TRUE}, element will be disabled,
 #' if \code{FALSE}, element will be enabled.
-disabled <- function(id, state){
+switch_validity <- function(id, state){
   session <- getDefaultReactiveDomain()
+  # respect Shiny modules/namespaces
+  if (inherits(session , "session_proxy")) {
+    id <- session$ns(id)
+  }
   session$sendCustomMessage(
     type = 'disabled',
     message = list(id = id, state = state)
@@ -111,12 +116,21 @@ disabled <- function(id, state){
 }
 
 #' @export
-default_disable <- function(x){
+html_enable <- function(id) {
+  switch_validity(id = id, state = FALSE)
+}
+
+#' @export
+html_disable <- function(id) {
+  switch_validity(id = id, state = TRUE)
+}
+#' @export
+default_disabled <- function(x){
   shiny::tagAppendAttributes(x, disabled = TRUE)
 }
 
 #' @export
-default_enable <- function(x){
+default_enabled <- function(x){
   shiny::tagAppendAttributes(x, disabled = FALSE)
 }
 
