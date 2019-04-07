@@ -39,63 +39,67 @@ Shiny.addCustomMessageHandler('unClass',
   }
 );
 
-function set_active(id, state){
+/* activate */
+function activate(id, state){
   if( state ){
     addClass(id, 'active');
   } else {
     unClass(id, 'active');
   }
 }
-Shiny.addCustomMessageHandler('set_active',
+Shiny.addCustomMessageHandler('activate',
   function(data) {
-    set_active(data.id, data.state);
+    activate(data.id, data.state);
   }
 );
 
-function disabled(id, state){
+
+/* enable */
+function enable(id, state){
 
   if( inherits(id, 'form-group')){
     var elts = document.querySelectorAll('#' + id + ' input');
     for( var i = 0 ; i < elts.length ; i++) {
       if( state ){
-        elts[i].setAttribute("disabled", true);
-      } else {
         elts[i].removeAttribute("disabled");
+      } else {
+        elts[i].setAttribute("disabled", true);
       }
     }
     return;
   }
   var x = document.getElementById(id);
-  if( inherits(id, 'selectized') && state ){
+  if( inherits(id, 'selectized') && !state ){
     x.selectize.disable();
     return;
-  } else if( inherits(id, 'selectized') && !state ){
+  } else if( inherits(id, 'selectized') && state ){
     x.selectize.enable();
     return;
   }
 
   if( inherits(id, 'js-range-slider')  ){
-    $("#" + id).data("ionRangeSlider").update({ disable : state });
+    $("#" + id).data("ionRangeSlider").update({ disable : !state });
     return;
   }
 
   if( state ){
-    x.setAttribute("disabled", true);
-  } else {
     x.removeAttribute("disabled");
+  } else {
+    x.setAttribute("disabled", true);
   }
 }
 
 
 
-Shiny.addCustomMessageHandler('disabled',
+Shiny.addCustomMessageHandler('enable',
   function(data) {
-    setTimeout(disabled(data.id, data.state), 2000);
+    setTimeout(enable(data.id, data.state), 2000);
 
   }
 );
 
-function toogle(id){
+/* toogle */
+function html_toogle(id){
   var x = document.getElementById(id);
   if( x.style.display === "" ){
     x.style.display = "none";
@@ -103,9 +107,42 @@ function toogle(id){
     x.style.display = null;
   }
 }
+function html_set_visible(id){
+  var x = document.getElementById(id);
+  x.style.display = null;
+}
+function html_set_hidden(id){
+  var x = document.getElementById(id);
+  x.style.display = "none";
+}
 
-Shiny.addCustomMessageHandler('toogle',
+Shiny.addCustomMessageHandler('html_toogle',
   function(data) {
-    toogle(data.id);
+    html_toogle(data.id);
   }
 );
+Shiny.addCustomMessageHandler('html_set_visible',
+  function(data) {
+    html_set_visible(data.id);
+  }
+);
+Shiny.addCustomMessageHandler('html_set_hidden',
+  function(data) {
+    html_set_hidden(data.id);
+  }
+);
+
+/* add counter variable */
+function registerCounter(id, event_id, event_type){
+  document.addEventListener('DOMContentLoaded', function() {
+    var x = document.getElementById(id);
+    window[event_id] = 0;
+    x.addEventListener(event_type, function(e){
+        window[event_id]++;
+        Shiny.onInputChange(event_id, window[event_id]);
+    },false);
+
+  });
+
+}
+

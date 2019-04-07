@@ -1,4 +1,4 @@
-Package: dgihesse
+Package: shinytools
 Type: Package
 Title: Simple 'JavaScript' Interactions in 'shiny' Applications
 Version: 0.0.1
