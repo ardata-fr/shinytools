@@ -1,7 +1,25 @@
+/*
 function inherits(id, className) {
   var x = document.getElementById(id);
   var out = null;
   if (x.classList){
+    out = x.classList.contains(className);
+  } else {
+    var classname = x.className;
+    out = !!classname.match(new RegExp('(\\s|^)' + className + '(\\s|$)'));
+  }
+  return out;
+}
+*/
+
+function inherits(id, className) {
+  var x = document.getElementById(id);
+  var out = null;
+  if( !x ){
+    return false;
+  }
+
+  if (x.hasOwnProperty('classList')){
     out = x.classList.contains(className);
   } else {
     var classname = x.className;
@@ -69,6 +87,11 @@ function enable(id, state){
     return;
   }
   var x = document.getElementById(id);
+  if(!x) {
+    console.warn('no id ' + id + ' found. cannot enable or disable');
+    return;
+  }
+
   if( inherits(id, 'selectized') && !state ){
     x.selectize.disable();
     return;

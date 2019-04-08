@@ -8,6 +8,7 @@
 #' @family javascript functions
 #' @examples
 #' library(shinytools)
+#' library(shiny)
 #'
 #' if (interactive()) {
 #'   options(device.ask.default = FALSE)
@@ -37,9 +38,22 @@
 #'
 #'   print(shinyApp(ui, server))
 #' }
-click_event <- function(id, event_id){
-  session <- getDefaultReactiveDomain()
-  id <- get_session_id(session, id)
+click_event <- function(id, event_id = paste0(id, "_event"), event_type = "click"){
 
-  tags$head(tags$script(HTML(sprintf("registerCounter('%s', '%s', 'click');", id, event_id))))
+  events <- c("click", "dblclick", "hover",
+    "mousedown", "mouseenter", "mouseleave",
+    "mousemove", "mouseout", "mouseover", "mouseup")
+
+  if( !event_type %in% events ){
+    stop("invalid event_type, pick one of",
+         paste0(shQuote(events), collapse = ", ") )
+  }
+
+  fun <- paste0("$(function() {",
+                sprintf("var %s = 0;", event_id),
+                sprintf("$('#%s').%s(function(e) {", id, event_type),
+                sprintf("%s = %s+1;", event_id, event_id),
+                sprintf("Shiny.onInputChange('%s', %s);", event_id, event_id),
+                "});});")
+  tags$head(tags$script(HTML(fun)))
 }

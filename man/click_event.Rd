@@ -4,7 +4,7 @@
 \alias{click_event}
 \title{associate a event with an input value}
 \usage{
-click_event(id, event_id)
+click_event(id, event_id = paste0(id, "_event"), event_type = "click")
 }
 \arguments{
 \item{id}{shiny input id on which click listener has been set}
@@ -17,6 +17,7 @@ The name of input value is free.
 }
 \examples{
 library(shinytools)
+library(shiny)
 
 if (interactive()) {
   options(device.ask.default = FALSE)

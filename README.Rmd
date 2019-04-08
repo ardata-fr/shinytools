@@ -1,0 +1,87 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# shinytools
+
+shinytools brings some minor but important features in shiny applications by providing 
+simple JavaScript functions to make interactions with the DOM easier.
+
+The first motivation of shinytools is to gather and share codes written by ArData 
+when building Shiny applications. 
+
+The package is providing JavaScript bindings for common and useful operations as `shiny` utilities :
+
+* disable or enable a shiny control: `ability()`, `html_disable()`, `html_enable()`, `default_disabled()`
+* display or hide an HTML element: `html_toogle()`, `html_set_visible()`, `html_set_hidden()`
+* set or unset active state for a button: `activate()`, `html_set_active()`, `html_set_inactive()`
+* create a reactive value from a click event: `click_event`
+* add or remove a class: `html_class()`, `html_addclass()`, `html_unclass()`
+
+## Installation
+
+``` r
+# install.packages("remotes")
+remotes::install_github("ardata-fr/shinytools")
+```
+
+## Example
+
+
+``` r
+library(shiny)
+library(shinytools)
+
+if (interactive()) {
+  ui <- fluidPage(
+    load_jstools(),
+    fluidRow(
+      column(width = 4,
+             actionButton(inputId = "able_slider",
+                          label = "[slider] enabled/disabled"),
+             br(),br(), br(),
+             sliderInput( "slider",
+                          "A Number:",
+                          min = 0, max = 1000, value = 500)
+      ),
+      column(width = 4,
+             actionButton(inputId = "able_select",
+                          label = "[list] enabled/disabled"),
+             br(),br(), br(),
+             selectizeInput("select", "A select input:", 1:5)
+      ),
+      column(width = 4,
+             actionButton(inputId = "able_btn",
+                          label = "[btn] enabled/disabled"),
+             br(),br(), br(),
+             actionButton("btn", "A button", class = "btn-warning")
+      )
+    )
+  )
+
+  server <- function(input, output) {
+    observeEvent(input$able_slider, {
+      ability("slider", input$able_slider%%2 < 1)
+    })
+    observeEvent(input$able_btn, {
+      ability("btn", input$able_btn%%2 < 1)
+    })
+    observeEvent(input$able_select, {
+      ability("select", input$able_select%%2 < 1)
+    })
+  }
+
+  print(shinyApp(ui, server))
+}
+```
+
