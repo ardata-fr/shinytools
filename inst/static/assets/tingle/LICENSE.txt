@@ -1,18 +1,3 @@
-YEAR: 2019
-COPYRIGHT HOLDER: David Gohel
-
-
-The shinytools package includes other open source software components. The following
-is a list of these components (full copies of the license agreements used by
-these components are included below):
-
-- tingle, https://github.com/robinparisi/tingle
-
-
-
-Tingle license
---------------
-
 The MIT License (MIT)
 
 Copyright (c) 2015 Robin Parisi
