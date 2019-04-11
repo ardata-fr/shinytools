@@ -6,8 +6,9 @@ Authors@R: c(
     person("David", "Gohel", role = c("aut", "cre"),
       email = "david.gohel@ardata.fr"), 
     person("Quentin", "Fazilleau", role = c("ctb"),
-      email = "quentin.fazilleau@ardata.fr")
-      )
+      email = "quentin.fazilleau@ardata.fr"), 
+    person("Victor", "Perrier", role = c("ctb")
+    )
 Description: Provides few functions to interact from a `shiny` 
  application with HTML elements. The primary goal of the package 
  is to provide disable and enable functions on shiny input elements.
