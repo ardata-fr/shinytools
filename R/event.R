@@ -5,6 +5,10 @@
 #' The name of input value is free.
 #' @param id shiny input id on which click listener has been set
 #' @param event_id reactive input to be incremented when click if fired.
+#' @param event_type the type of event, can be one of: \code{"click"},
+#'  \code{"dblclick"}, \code{"hover"}, \code{"mousedown"}, \code{"mouseenter"},
+#'  \code{"mouseleave"}, \code{"mousemove"}, \code{"mouseout"}, \code{"mouseover"},
+#'  \code{"mouseup"}.
 #' @family javascript functions
 #' @examples
 #' library(shinytools)

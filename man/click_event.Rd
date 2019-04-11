@@ -10,6 +10,11 @@ click_event(id, event_id = paste0(id, "_event"), event_type = "click")
 \item{id}{shiny input id on which click listener has been set}
 
 \item{event_id}{reactive input to be incremented when click if fired.}
+
+\item{event_type}{the type of event, can be one of: \code{"click"},
+\code{"dblclick"}, \code{"hover"}, \code{"mousedown"}, \code{"mouseenter"},
+\code{"mouseleave"}, \code{"mousemove"}, \code{"mouseout"}, \code{"mouseover"},
+\code{"mouseup"}.}
 }
 \description{
 associate a click on an HTML element with an input value.
