@@ -30,6 +30,10 @@ function inherits(id, className) {
 
 function addClass(id, className) {
   var x = document.getElementById(id);
+  if( !x ){
+    console.warn("could not find any element with id: " + id);
+    return;
+  }
   if (x.classList){
     x.classList.add(className);
   } else if (!inherits(x, className)){
@@ -44,6 +48,11 @@ Shiny.addCustomMessageHandler('addClass',
 
 function unClass(id, className) {
   var x = document.getElementById(id);
+  if( !x ){
+    console.warn("could not find any element with id: " + id);
+    return;
+  }
+
   if (x.classList){
     x.classList.remove(className);
   } else if (inherits(x, className)) {
@@ -59,6 +68,7 @@ Shiny.addCustomMessageHandler('unClass',
 
 /* activate */
 function activate(id, state){
+
   if( state ){
     addClass(id, 'active');
   } else {
@@ -124,6 +134,11 @@ Shiny.addCustomMessageHandler('enable',
 /* toogle */
 function html_toogle(id){
   var x = document.getElementById(id);
+  if( !x ){
+    console.warn("could not find any element with id: " + id);
+    return;
+  }
+
   if( x.style.display === "" ){
     x.style.display = "none";
   } else {
@@ -131,10 +146,18 @@ function html_toogle(id){
   }
 }
 function html_set_visible(id){
+  if( !x ){
+    console.warn("could not find any element with id: " + id);
+    return;
+  }
   var x = document.getElementById(id);
   x.style.display = null;
 }
 function html_set_hidden(id){
+  if( !x ){
+    console.warn("could not find any element with id: " + id);
+    return;
+  }
   var x = document.getElementById(id);
   x.style.display = "none";
 }
@@ -155,17 +178,4 @@ Shiny.addCustomMessageHandler('html_set_hidden',
   }
 );
 
-/* add counter variable */
-function registerCounter(id, event_id, event_type){
-  document.addEventListener('DOMContentLoaded', function() {
-    var x = document.getElementById(id);
-    window[event_id] = 0;
-    x.addEventListener(event_type, function(e){
-        window[event_id]++;
-        Shiny.onInputChange(event_id, window[event_id]);
-    },false);
-
-  });
-
-}
 
