@@ -1,36 +1,35 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+shinytools
+==========
 
-# shinytools
+shinytools brings some minor but important features in shiny applications by providing simple JavaScript functions to make interactions with the DOM easier.
 
-shinytools brings some minor but important features in shiny
-applications by providing simple JavaScript functions to make
-interactions with the DOM easier.
+The first motivation of shinytools is to gather and share codes written by ArData when building Shiny applications.
 
-The first motivation of shinytools is to gather and share codes written
-by ArData when building Shiny applications.
+The package is providing JavaScript bindings for common and useful operations as `shiny` utilities :
 
-The package is providing JavaScript bindings for common and useful
-operations as `shiny` utilities :
+-   disable or enable a shiny control: `ability()`, `html_disable()`, `html_enable()`, `default_disabled()`
+-   display or hide an HTML element: `html_toogle()`, `html_set_visible()`, `html_set_hidden()`
+-   set or unset active state for a button: `activate()`, `html_set_active()`, `html_set_inactive()`
+-   create a reactive value from a click event: `click_event`
+-   add or remove a class: `html_class()`, `html_addclass()`, `html_unclass()`
 
-  - disable or enable a shiny control: `ability()`, `html_disable()`,
-    `html_enable()`, `default_disabled()`
-  - display or hide an HTML element: `html_toogle()`,
-    `html_set_visible()`, `html_set_hidden()`
-  - set or unset active state for a button: `activate()`,
-    `html_set_active()`, `html_set_inactive()`
-  - create a reactive value from a click event: `click_event`
-  - add or remove a class: `html_class()`, `html_addclass()`,
-    `html_unclass()`
+The package also provides some of the modules we use :
 
-## Installation
+-   The data import : `importDataUI` & `importDataServer`
+-   A data visualizer : `dataVizUI` & `dataVizServer`
+
+Installation
+------------
 
 ``` r
 # install.packages("remotes")
 remotes::install_github("ardata-fr/shinytools")
 ```
 
-## Example
+Example
+-------
 
 ``` r
 library(shiny)

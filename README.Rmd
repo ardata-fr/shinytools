@@ -28,6 +28,11 @@ The package is providing JavaScript bindings for common and useful operations as
 * create a reactive value from a click event: `click_event`
 * add or remove a class: `html_class()`, `html_addclass()`, `html_unclass()`
 
+The package also provides some of the modules we use : 
+
+* The data import : `importDataUI` & `importDataServer`
+* A data visualizer : `dataVizUI` & `dataVizServer`
+
 ## Installation
 
 ``` r
