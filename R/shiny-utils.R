@@ -69,11 +69,26 @@ filled <- function(x) {
     if (is.na(x)) {
       return(FALSE)
     } else {
-      if (x == "") {
+      if (as.character(x) == "") {
         return(FALSE)
       } else {
         return(TRUE)
       }
     }
   }
+}
+
+#' @export
+info_tooltip <- function(label = "", tooltip = "", label_style = "font-weight:bold", infoButton_style = "") {
+    randomId <- paste0("tooltipID", sample(x = 1:10000, size = 1))
+    infoButton <- tags$a(
+        id = randomId, style = infoButton_style,
+        style = "color: steelblue;", icon("info-circle", class = "fa-lg"),
+        `data-toggle` = "popover", `data-trigger` = "hover", `data-animation` = "false",
+        `data-container` = "body", tabindex = "0", role = "button",
+        `data-content` = tooltip,
+        tags$script(sprintf("$('#%s').popover();", randomId))
+    )
+    label_ <- tags$span(style = label_style, label)
+    tags$span(label_, infoButton)
 }

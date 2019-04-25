@@ -5,7 +5,9 @@
 \title{Factor to character}
 \usage{
 importDataServer(input, output, session,
-  forbidden_labels = reactive(NULL))
+  forbidden_labels = reactive(NULL), default_tofact = FALSE,
+  ui_element = "actionLink", ui_label = "Import",
+  ui_icon = icon("upload"))
 }
 \arguments{
 \item{input}{Not a real parameter, not to be set manually.}
@@ -15,6 +17,14 @@ importDataServer(input, output, session,
 \item{session}{Not a real parameter, not to be set manually.}
 
 \item{forbidden_labels}{Optional reactive, forbidden labels}
+
+\item{default_tofact}{If default convert characters to factors. Default FALSE.}
+
+\item{ui_element}{UI element to show, either "actionButton", or "actionLink". Default "actionLink".}
+
+\item{ui_label}{Label of ui element. Default "import".}
+
+\item{ui_icon}{Icon of ui element. Default icon("upload").}
 }
 \description{
 Server part of module import

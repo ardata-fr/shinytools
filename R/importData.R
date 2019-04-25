@@ -4,10 +4,14 @@
 #' @param id Module call id
 #' @param label Label of actionLink
 #' @import shiny
-importDataUI <- function(id, label = "Import") {
+importDataUI <- function(id) {
   ns <- NS(id)
-
-  actionLink(ns("AB_import"), label = label)
+  
+  fluidRow(
+    column(12,
+      uiOutput(ns("ui_AB_import"))
+    )
+  )
 }
 
 #' @export
@@ -17,6 +21,10 @@ importDataUI <- function(id, label = "Import") {
 #' @param output Not a real parameter, not to be set manually.
 #' @param session Not a real parameter, not to be set manually.
 #' @param forbidden_labels Optional reactive, forbidden labels
+#' @param default_tofact If default convert characters to factors. Default FALSE.
+#' @param ui_element UI element to show, either "actionButton", or "actionLink". Default "actionLink".
+#' @param ui_label Label of ui element. Default "import".
+#' @param ui_icon Icon of ui element. Default icon("upload").
 #' @import shiny
 #' @importFrom tools file_ext
 #' @importFrom utils read.csv2
@@ -60,7 +68,9 @@ importDataUI <- function(id, label = "Import") {
 #'
 #'   print(shinyApp(ui, server))
 #' }
-importDataServer <- function(input, output, session, forbidden_labels = reactive(NULL)) {
+importDataServer <- function(input, output, session,
+                      forbidden_labels = reactive(NULL), default_tofact = FALSE, 
+                      ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload")) {
 
   ns <- session$ns
 
@@ -72,7 +82,20 @@ importDataServer <- function(input, output, session, forbidden_labels = reactive
     toReturn  <- reactiveValues(object = NULL, name = NULL, trigger = 0)
     internal  <- reactiveValues(infile = NULL)
   }
-
+  
+  ########+
+  ## UI ---
+  ########+
+  {
+    output$ui_AB_import <- renderUI({
+      if (ui_element == "actionButton") {
+        actionButton(ns("AB_import"), label = ui_label, icon = ui_icon)
+      } else {
+        actionLink(ns("AB_import"), label = ui_label, icon = ui_icon)
+      }
+    })
+  }
+  
   ###########
   ## modal ##
   ###########
@@ -147,7 +170,7 @@ importDataServer <- function(input, output, session, forbidden_labels = reactive
     output$ui_DIV_modal_options <- renderUI({
       req(internal$infile)
       file_ext <- toupper(file_ext(internal$infile$datapath))
-      common <- checkboxInput(ns("CBI_char2factor"), label = "Convert character to factor ?", value = FALSE)
+      common <- checkboxInput(ns("CBI_char2factor"), label = "Convert character to factor ?", value = default_tofact)
       if (file_ext %in% c("XLS", "XLSX")) {
         requireNamespace(package = "openxlsx", quietly = TRUE)
         sheets <- openxlsx::getSheetNames(internal$infile$datapath)

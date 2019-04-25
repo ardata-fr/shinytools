@@ -4,7 +4,7 @@
 \alias{importDataUI}
 \title{Factor to character}
 \usage{
-importDataUI(id, label = "Import")
+importDataUI(id)
 }
 \arguments{
 \item{id}{Module call id}
