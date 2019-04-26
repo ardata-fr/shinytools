@@ -1,6 +1,6 @@
 filterVarUI <- function(id) {
   ns <- NS(id)
-  
+
   fluidRow(
     column(12,
       uiOutput(ns("ui_DIV_filter"))
@@ -9,9 +9,6 @@ filterVarUI <- function(id) {
 }
 
 #' @title filterVar
-#' @import shiny
-#' @import lubridate
-#' @import rlang
 #' @examples
 #' library(shinytools)
 #' library(shiny)
@@ -19,13 +16,13 @@ filterVarUI <- function(id) {
 #' library(rlang)
 #' if (interactive()) {
 #'   options(device.ask.default = FALSE)
-#'   
+#'
 #'   test_date <- data.frame(col = as.Date(as.character(lakers$date), tryFormats = "%Y%m%d"))
 #'   test_logical <- data.frame(col = sample(c(T,F), size = 100, replace = T))
 #'   test_fact <- data.frame(Species = iris$Species)
 #'   test_char <- data.frame(Species = as.character(iris$Species), stringsAsFactors = FALSE)
 #'   test_num <- data.frame(Sepal.Length = iris$Sepal.Length)
-#'   
+#'
 #'   ui <- fluidPage(
 #'       filterVarUI(id = "date"),
 #'       filterVarUI(id = "logical"),
@@ -33,78 +30,83 @@ filterVarUI <- function(id) {
 #'       filterVarUI(id = "char"),
 #'       filterVarUI(id = "num")
 #'   )
-#' 
+#'
 #'   server <- function(input, output) {
 #'       # Test date
-#'       res_date <- callModule(module = filterVarServer, id = "date", 
-#'                              x = reactive(test_date), 
+#'       res_date <- callModule(module = filterVarServer, id = "date",
+#'                              x = reactive(test_date),
 #'                              varname = reactive("col"),
 #'                              label = reactive("col"))
-#'       
+#'
 #'       observe({
 #'           req(res_date)
 #'           tmp <- reactiveValuesToList(res_date)
 #'           print(tmp)
 #'       })
-#'       
+#'
 #'       # Test logical
-#'       res_logical <- callModule(module = filterVarServer, id = "logical", 
-#'                                 x = reactive(test_logical), 
+#'       res_logical <- callModule(module = filterVarServer, id = "logical",
+#'                                 x = reactive(test_logical),
 #'                                 varname = reactive("col"),
 #'                                 label = reactive("col"))
-#'       
+#'
 #'       observe({
 #'           req(res_logical)
 #'           tmp <- reactiveValuesToList(res_logical)
 #'           print(tmp)
 #'       })
-#'       
+#'
 #'       # Test factor
-#'       res_factor <- callModule(module = filterVarServer, id = "fact", 
-#'                                x = reactive(test_fact), 
+#'       res_factor <- callModule(module = filterVarServer, id = "fact",
+#'                                x = reactive(test_fact),
 #'                                varname = reactive("Species"),
 #'                                label = reactive("Species"))
-#'       
+#'
 #'       observe({
 #'           req(res_factor)
 #'           tmp <- reactiveValuesToList(res_factor)
 #'           print(tmp)
 #'       })
-#'       
+#'
 #'       # Test character
-#'       res_char <- callModule(module = filterVarServer, id = "char", 
-#'                              x = reactive(test_char), 
+#'       res_char <- callModule(module = filterVarServer, id = "char",
+#'                              x = reactive(test_char),
 #'                              varname = reactive("Species"),
 #'                              label = reactive("Species"))
-#'       
+#'
 #'       observe({
 #'           req(res_char)
 #'           tmp <- reactiveValuesToList(res_char)
 #'           print(tmp)
 #'       })
-#'       
+#'
 #'       # Test numeric
-#'       res_num <- callModule(module = filterVarServer, id = "num", 
-#'                             x = reactive(test_num), 
+#'       res_num <- callModule(module = filterVarServer, id = "num",
+#'                             x = reactive(test_num),
 #'                             varname = reactive("Sepal.Length"),
 #'                             label = reactive("Sepal.Length"))
-#'       
+#'
 #'       observe({
 #'           req(res_num)
 #'           tmp <- reactiveValuesToList(res_num)
 #'           print(tmp)
 #'       })
-#'       
+#'
 #'   }
 #'   print(shinyApp(ui, server))
 #' }
-filterVarServer <-  function(input, output, session, 
-                      x = reactive(NULL), 
-                      varname = reactive(NULL), 
+filterVarServer <-  function(input, output, session,
+                      x = reactive(NULL),
+                      varname = reactive(NULL),
                       label = reactive(NULL)) {
-  
+
+  if (!requireNamespace(package = "rlang"))
+    message("Package 'rlang' is required to run this module")
+  if (!requireNamespace(package = "lubridate"))
+    message("Package 'lubridate' is required to run this module")
+
   ns <- session$ns
-  
+
   ############+
   ## Input ----
   ############+
@@ -113,7 +115,7 @@ filterVarServer <-  function(input, output, session,
                   x = NULL, # To use
                   res = NULL # For results
                 )
-    
+
     # Initialize internal$x & internal$res
     observe({
       if (is.null(x())) {
@@ -134,7 +136,7 @@ filterVarServer <-  function(input, output, session,
       }
     })
   }
-  
+
   ########+
   ## UI ---
   ########+
@@ -150,21 +152,22 @@ filterVarServer <-  function(input, output, session,
         } else if (is.character(internal$x) || is.factor(internal$x) || is.logical(internal$x)) {
           lvl <- as.character(unique(internal$x))
           selectizeInput(ns("ui"), label = label(), choices = lvl, selected = lvl, multiple = TRUE)
-        } else if (is.Date(internal$x)) {
+        } else if (lubridate::is.Date(internal$x)) {
           min_ <- min(internal$x)
           max_ <- max(internal$x)
           dateRangeInput(ns("ui"), label = label(), start = min_, end = max_, min = min_, max = max_)
         }
       }
     })
+    outputOptions(output, 'ui_DIV_filter', suspendWhenHidden = FALSE)
   }
-  
+
   #############+
   ## Output ----
   #############+
   {
     toReturn <- reactiveValues(filtered_data = NULL, filter_expr = NULL, filtered = FALSE)
-    
+
     # If no filter applied, then return filtered = FALSE
     observe({
       if (!filled(input$ui)) {
@@ -176,17 +179,17 @@ filterVarServer <-  function(input, output, session,
             filtered <- FALSE
           }
           expr_string <- paste(varname(), ">=", input$ui[1], "&", varname(), "<=", input$ui[2])
-        } else if (is.Date(internal$x)) {
+        } else if (lubridate::is.Date(internal$x)) {
           if (input$ui[1] == min(internal$x) && input$ui[2] == max(internal$x)) {
             filtered = FALSE
           }
-          expr_string <-  paste(varname(), ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&", 
+          expr_string <-  paste(varname(), ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&",
                             varname(), "<=", paste0("as.Date(\"", input$ui[2], "\")"))
         } else if (is.character(internal$x) || is.factor(internal$x)) {
           if (all(unique(internal$x) %in% input$ui)) {
             filtered <- FALSE
           }
-          expr_string <- paste(varname(), "%in%", expr_text(expr(!!input$ui)))
+          expr_string <- paste(varname(), "%in%", rlang::expr_text(rlang::expr(!!input$ui)))
         } else if (is.logical(internal$x)) {
           if (length(input$ui) == 2) {
             filtered <- FALSE
@@ -195,16 +198,16 @@ filterVarServer <-  function(input, output, session,
             expr_string <- paste(varname(), "==", input$ui)
           }
         }
-        filter_expr <- parse_expr(expr_string)
-        filters <- eval_tidy(filter_expr, data = internal$res)
+        filter_expr <- rlang::parse_expr(expr_string)
+        filters <- rlang::eval_tidy(filter_expr, data = internal$res)
         filtered_data <- internal$res[filters,]
         toReturn$filter_expr <- filter_expr
         toReturn$filtered_data <- filtered_data
         toReturn$filtered <- filtered
-        
+
       }
     })
-    
+
     return(toReturn)
   }
 }
