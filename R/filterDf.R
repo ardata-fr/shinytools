@@ -38,7 +38,7 @@ filterDfUI <- function(id) {
 #'   print(shinyApp(ui, server))
 #' }
 filterDfServer <- function(input, output, session, 
-                    x = reactive(NULL), default_show = TRUE, show_all = TRUE) {
+                    x = reactive(NULL), default_show = TRUE, show_all = TRUE, return_datas = FALSE) {
   
   if (!requireNamespace(package = "rlang"))
     message("Package 'rlang' is required to run this module")
@@ -48,7 +48,7 @@ filterDfServer <- function(input, output, session,
   ns <- session$ns
   
   toReturn <- reactiveValues(expr = NULL, filtered_data = NULL, filtered = FALSE)
-  internal <- reactiveValues(filters_shown = default_show)
+  internal <- reactiveValues(filters_shown = default_show, trigger = 0)
   
   # The server side is split into 2 parts : show all filters and show one
   if (show_all) {
@@ -103,7 +103,10 @@ filterDfServer <- function(input, output, session,
       
       observeEvent(input$AB_show_filters, {
         internal$filters_shown <- !internal$filters_shown
-        html_toogle("ui_ui_MODS_filters")
+        # Increase trigger if filters shown
+        if (internal$filters_shown) {
+          internal$trigger <- internal$trigger + 1
+        }
       })
     }
     
@@ -120,7 +123,9 @@ filterDfServer <- function(input, output, session,
         res_mods[[name]] <<-  callModule(module = filterVarServer, id = id,
                                 x = reactive(x[,name, drop = FALSE]),
                                 varname = reactive(name),
-                                label = reactive(name))
+                                label = reactive(name),
+                                default = reactive(res_mods[[name]][["values"]]),
+                                trigger = reactive(internal$trigger))
                                 
         obs_mods[[name]] <<- observeEvent(res_mods[[name]][["filter_expr"]], {
           all_filters[[name]] <- reactiveValuesToList(res_mods[[name]])
@@ -165,13 +170,10 @@ filterDfServer <- function(input, output, session,
       
       # This UI contains the ui of all modules
       output$ui_ui_MODS_filters <- renderUI({
-        if (default_show) {
+        if (internal$filters_shown) {
           uiOutput(ns("ui_MODS_filters"))
         } else {
-          # Quand y'aura la fonction dans shinytools
-          #html_hide(
-            uiOutput(ns("ui_MODS_filters"))
-          #)
+          NULL
         }
       })
     }
@@ -187,15 +189,19 @@ filterDfServer <- function(input, output, session,
         
         if (length(filters) == 0) {
           toReturn$expr           <- NULL
-          toReturn$filtered_data  <- isolate(x())
           toReturn$filtered       <- FALSE
+          if (return_datas) {
+            toReturn$filtered_data  <- isolate(x())
+          }
         } else {
           tmp_expr <- paste(sapply(filters, function(x) {tmp[[x]][["filter_expr"]]}), collapse = " & ")
           my_expr <- rlang::parse_expr(tmp_expr)
-          filtered_data <- rlang::eval_tidy(my_expr, data = isolate(x()))
-          filtered_data <- isolate(x())[filtered_data,]
+          if (return_datas) {
+            filtered_data <- rlang::eval_tidy(my_expr, data = isolate(x()))
+            filtered_data <- isolate(x())[filtered_data,]
+            toReturn$filtered_data <- filtered_data
+          }
           toReturn$expr          <- my_expr
-          toReturn$filtered_data <- filtered_data
           toReturn$filtered      <- TRUE
         }
       })
