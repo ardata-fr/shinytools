@@ -2,9 +2,9 @@ filterVarUI <- function(id) {
   ns <- NS(id)
   
   fluidRow(
-  column(12,
-    uiOutput(ns("ui_DIV_filter"))
-  )
+    column(12,
+      uiOutput(ns("ui_DIV_filter"))
+    )
   )
 }
 
@@ -99,13 +99,14 @@ filterVarServer <-  function(input, output, session,
                x = reactive(NULL),
                varname = reactive(NULL),
                label = reactive(NULL),
+               return_datas = FALSE,
                default = reactive(NULL),
                trigger = reactive(NULL)) {
-  
+    
   if (!requireNamespace(package = "rlang"))
-    message("Package 'rlang' is required to run this module")
+      message("Package 'rlang' is required to run this module")
   if (!requireNamespace(package = "lubridate"))
-    message("Package 'lubridate' is required to run this module")
+      message("Package 'lubridate' is required to run this module")
   
   ns <- session$ns
   
@@ -113,30 +114,30 @@ filterVarServer <-  function(input, output, session,
   ## Input ----
   ############+
   {
-    internal <- reactiveValues(
-      x = NULL, # To use
-      res = NULL # For results
-    )
-    
-    # Initialize internal$x & internal$res
-    observe({
-      if (is.null(x())) {
-        internal$x <- internal$res <- NULL
-      } else {
-        if (inherits(x(), "data.frame")) {
-          internal$res <- x()
-          if (varname() %in% colnames(x())) {
-            internal$x   <- x()[,varname()]
-          } else {
-            internal$x <- NULL
-          }
+      internal <- reactiveValues(
+        x = NULL, # To use
+        res = NULL # For results
+      )
+      
+      # Initialize internal$x & internal$res
+      observe({
+        if (is.null(x())) {
+          internal$x <- internal$res <- NULL
         } else {
-          tmp <- data.frame(x())
-          colnames(tmp) <- varname()
-          internal$res <- tmp
+          if (inherits(x(), "data.frame")) {
+            internal$res <- x()
+            if (varname() %in% colnames(x())) {
+              internal$x   <- x()[,varname()]
+            } else {
+              internal$x <- NULL
+            }
+          } else {
+            tmp <- data.frame(x())
+            colnames(tmp) <- varname()
+            internal$res <- tmp
+          }
         }
-      }
-    })
+      })
   }
   
   ########+
@@ -193,9 +194,9 @@ filterVarServer <-  function(input, output, session,
       if (!filled(input$ui)) {
         toReturn$filter_expr <- toReturn$filtered_data <- toReturn$values <- NULL
       } else {
-        filtered  <- TRUE
+        filtered    <- TRUE
         expr_string <- NULL
-        values    <- NULL
+        values      <- NULL
         if (is.numeric(internal$x)) {
           if (input$ui[1] == min(internal$x) && input$ui[2] == max(internal$x)) {
             filtered <- FALSE
@@ -209,7 +210,7 @@ filterVarServer <-  function(input, output, session,
           } else {
             values <- input$ui
             expr_string <-  paste(varname(), ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&",
-                        varname(), "<=", paste0("as.Date(\"", input$ui[2], "\")"))
+                                  varname(), "<=", paste0("as.Date(\"", input$ui[2], "\")"))
           }
         } else if (is.character(internal$x) || is.factor(internal$x)) {
           if (all(unique(internal$x) %in% input$ui)) {
@@ -228,11 +229,19 @@ filterVarServer <-  function(input, output, session,
         }
         if (!is.null(expr_string)) {
           filter_expr <- rlang::parse_expr(expr_string)
-          filters <- rlang::eval_tidy(filter_expr, data = internal$res)
-          filtered_data <- internal$res[filters,]
+          if (return_datas) {
+            filters <- rlang::eval_tidy(filter_expr, data = internal$res)
+            filtered_data <- internal$res[filters,]
+          } else {
+            filtered_data <- NULL
+          }
         } else {
           filter_expr <- NULL
-          filtered_data <- internal$res
+          if (return_datas) {
+            filtered_data <- internal$res
+          } else {
+            filtered_data <- NULL
+          }
         }
         toReturn$filter_expr <- filter_expr
         toReturn$filtered_data <- filtered_data
