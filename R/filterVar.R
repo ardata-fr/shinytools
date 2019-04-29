@@ -116,7 +116,8 @@ filterVarServer <-  function(input, output, session,
   {
       internal <- reactiveValues(
         x = NULL, # To use
-        res = NULL # For results
+        res = NULL, # For results
+        has_na = NULL # Add or not NA
       )
       
       # Initialize internal$x & internal$res
@@ -149,26 +150,36 @@ filterVarServer <-  function(input, output, session,
       if (is.null(internal$x)) {
         NULL
       } else {
-        if (is.numeric(internal$x)) {
-          min_ <- min(internal$x)
-          max_ <- max(internal$x)
+        # Check if NA present
+        if (length(which(is.na(internal$x))) > 0) {
+          internal$has_na <- TRUE
+          x <- internal$x[!is.na(internal$x)]
+          label_ <- NULL
+        } else {
+          internal$has_na <- FALSE
+          x <- internal$x
+          label_ <- label()
+        }
+        if (is.numeric(x)) {
+          min_ <- min(x)
+          max_ <- max(x)
           if (length(isolate(default())) == 2) {
             values_ <- isolate(default())
           } else {
             values_ <- c(min_, max_)
           }
-          sliderInput(ns("ui"), label = label(), min = min_, max = max_, value = values_)
-        } else if (is.character(internal$x) || is.factor(internal$x) || is.logical(internal$x)) {
-          lvl <- as.character(unique(internal$x))
+          button <- sliderInput(ns("ui"), label = label_, min = min_, max = max_, value = values_)
+        } else if (is.character(x) || is.factor(x) || is.logical(x)) {
+          lvl <- as.character(unique(x))
           if (is.null(isolate(default()))) {
             selected_ <- lvl
           } else {
             selected_ <- isolate(default())
           }
-          selectizeInput(ns("ui"), label = label(), choices = lvl, selected = selected_, multiple = TRUE)
-        } else if (lubridate::is.Date(internal$x)) {
-          min_ <- min(internal$x)
-          max_ <- max(internal$x)
+          button <- selectizeInput(ns("ui"), label = label_, choices = lvl, selected = selected_, multiple = TRUE)
+        } else if (lubridate::is.Date(x)) {
+          min_ <- min(x)
+          max_ <- max(x)
           if (length(isolate(default())) == 2) {
             start_ <- isolate(default())[1]
             end_   <- isolate(default())[2]
@@ -176,7 +187,17 @@ filterVarServer <-  function(input, output, session,
             start_ <- min_
             end_   <- max_
           }
-          dateRangeInput(ns("ui"), label = label(), start = start_, end = end_, min = min_, max = max_)
+          button <- dateRangeInput(ns("ui"), label = label_, start = start_, end = end_, min = min_, max = max_)
+        }
+        if (internal$has_na) {
+          tagList(
+            tags$span(
+              tags$label(label()), HTML("&nbsp;&nbsp;"), naInput(ns("ui_na"))
+            ),
+            button
+          )
+        } else {
+          button
         }
       }
     })
@@ -197,34 +218,74 @@ filterVarServer <-  function(input, output, session,
         filtered    <- TRUE
         expr_string <- NULL
         values      <- NULL
-        if (is.numeric(internal$x)) {
-          if (input$ui[1] == min(internal$x) && input$ui[2] == max(internal$x)) {
-            filtered <- FALSE
+        if (internal$has_na) {
+          x <- internal$x[!is.na(internal$x)]
+          if (input$ui_na) {
+            removeNA    <- FALSE
+          } else {
+            removeNA    <- TRUE
+          }
+        } else {
+          x <- internal$x
+          removeNA <- FALSE
+        }
+        
+        if (is.numeric(x)) {
+          if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
+            if (removeNA) {
+              expr_string <- paste0("!is.na(", varname(), ")")
+            } else {
+              filtered <- FALSE
+            }
           } else {
             values <- c(input$ui)
             expr_string <- paste(varname(), ">=", input$ui[1], "&", varname(), "<=", input$ui[2])
+            if (!removeNA) {
+              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            }
           }
-        } else if (lubridate::is.Date(internal$x)) {
-          if (input$ui[1] == min(internal$x) && input$ui[2] == max(internal$x)) {
-            filtered = FALSE
+        } else if (lubridate::is.Date(x)) {
+          if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
+            if (internal$has_na && removeNA) {
+              expr_string <- paste0("!is.na(", varname(), ")")
+            } else {
+              filtered <- FALSE
+            }
           } else {
             values <- input$ui
             expr_string <-  paste(varname(), ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&",
                                   varname(), "<=", paste0("as.Date(\"", input$ui[2], "\")"))
+            if (internal$has_na && !removeNA) {
+              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            }
           }
-        } else if (is.character(internal$x) || is.factor(internal$x)) {
-          if (all(unique(internal$x) %in% input$ui)) {
-            filtered <- FALSE
+        } else if (is.character(x) || is.factor(x)) {
+          if (all(unique(x) %in% input$ui)) {
+            if (internal$has_na && removeNA) {
+              expr_string <- paste0("!is.na(", varname(), ")")
+            } else {
+              filtered <- FALSE
+            }
           } else {
             values <- input$ui
             expr_string <- paste(varname(), "%in%", rlang::expr_text(rlang::expr(!!input$ui)))
+            if (!removeNA) {
+              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            }
           }
-        } else if (is.logical(internal$x)) {
+        } else if (is.logical(x)) {
           if (length(input$ui) == 2) {
-            filtered <- FALSE
+            if (internal$has_na && removeNA) {
+              expr_string <- paste0("!is.na(", varname(), ")")
+            } else {
+              filtered <- FALSE
+            }
           } else {
             values <- input$ui
             expr_string <- paste(varname(), "==", input$ui)
+            if (!removeNA) {
+              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            }
           }
         }
         if (!is.null(expr_string)) {
