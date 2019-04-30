@@ -5,7 +5,9 @@
 \title{filterVar}
 \usage{
 filterVarServer(input, output, session, x = reactive(NULL),
-  varname = reactive(NULL), label = reactive(NULL))
+  varname = reactive(NULL), label = reactive(NULL),
+  return_datas = FALSE, default = reactive(NULL),
+  trigger = reactive(NULL))
 }
 \description{
 filterVar
@@ -25,73 +27,73 @@ if (interactive()) {
   test_num <- data.frame(Sepal.Length = iris$Sepal.Length)
 
   ui <- fluidPage(
-      filterVarUI(id = "date"),
-      filterVarUI(id = "logical"),
-      filterVarUI(id = "fact"),
-      filterVarUI(id = "char"),
-      filterVarUI(id = "num")
+    filterVarUI(id = "date"),
+    filterVarUI(id = "logical"),
+    filterVarUI(id = "fact"),
+    filterVarUI(id = "char"),
+    filterVarUI(id = "num")
   )
 
   server <- function(input, output) {
-      # Test date
-      res_date <- callModule(module = filterVarServer, id = "date",
-                             x = reactive(test_date),
-                             varname = reactive("col"),
-                             label = reactive("col"))
+    # Test date
+    res_date <-  callModule(module = filterVarServer, id = "date",
+                   x = reactive(test_date),
+                   varname = reactive("col"),
+                   label = reactive("col"))
 
-      observe({
-          req(res_date)
-          tmp <- reactiveValuesToList(res_date)
-          print(tmp)
-      })
+    observe({
+      req(res_date)
+      tmp <- reactiveValuesToList(res_date)
+      print(tmp)
+    })
 
-      # Test logical
-      res_logical <- callModule(module = filterVarServer, id = "logical",
-                                x = reactive(test_logical),
-                                varname = reactive("col"),
-                                label = reactive("col"))
+    # Test logical
+    res_logical <- callModule(module = filterVarServer, id = "logical",
+                     x = reactive(test_logical),
+                     varname = reactive("col"),
+                     label = reactive("col"))
 
-      observe({
-          req(res_logical)
-          tmp <- reactiveValuesToList(res_logical)
-          print(tmp)
-      })
+    observe({
+      req(res_logical)
+      tmp <- reactiveValuesToList(res_logical)
+      print(tmp)
+    })
 
-      # Test factor
-      res_factor <- callModule(module = filterVarServer, id = "fact",
-                               x = reactive(test_fact),
-                               varname = reactive("Species"),
-                               label = reactive("Species"))
+    # Test factor
+    res_factor <-  callModule(module = filterVarServer, id = "fact",
+                     x = reactive(test_fact),
+                     varname = reactive("Species"),
+                     label = reactive("Species"))
 
-      observe({
-          req(res_factor)
-          tmp <- reactiveValuesToList(res_factor)
-          print(tmp)
-      })
+    observe({
+      req(res_factor)
+      tmp <- reactiveValuesToList(res_factor)
+      print(tmp)
+    })
 
-      # Test character
-      res_char <- callModule(module = filterVarServer, id = "char",
-                             x = reactive(test_char),
-                             varname = reactive("Species"),
-                             label = reactive("Species"))
+    # Test character
+    res_char <-  callModule(module = filterVarServer, id = "char",
+                   x = reactive(test_char),
+                   varname = reactive("Species"),
+                   label = reactive("Species"))
 
-      observe({
-          req(res_char)
-          tmp <- reactiveValuesToList(res_char)
-          print(tmp)
-      })
+    observe({
+      req(res_char)
+      tmp <- reactiveValuesToList(res_char)
+      print(tmp)
+    })
 
-      # Test numeric
-      res_num <- callModule(module = filterVarServer, id = "num",
-                            x = reactive(test_num),
-                            varname = reactive("Sepal.Length"),
-                            label = reactive("Sepal.Length"))
+    # Test numeric
+    res_num <- callModule(module = filterVarServer, id = "num",
+                 x = reactive(test_num),
+                 varname = reactive("Sepal.Length"),
+                 label = reactive("Sepal.Length"))
 
-      observe({
-          req(res_num)
-          tmp <- reactiveValuesToList(res_num)
-          print(tmp)
-      })
+    observe({
+      req(res_num)
+      tmp <- reactiveValuesToList(res_num)
+      print(tmp)
+    })
 
   }
   print(shinyApp(ui, server))

@@ -94,7 +94,10 @@ info_tooltip <- function(label = "", tooltip = "", label_style = "font-weight:bo
 }
 
 naInput <- function(id) {
-  prettyToggle(
+  if (!requireNamespace(package = "shinyWidgets"))
+    message("Package 'shinyWidgets' is required to run this function")
+
+  shinyWidgets::prettyToggle(
     inputId = id, 
     value = TRUE,
     label_on = "NA", icon_on = icon("ok", lib = "glyphicon"),

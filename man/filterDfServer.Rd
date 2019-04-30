@@ -5,7 +5,7 @@
 \title{filterDf}
 \usage{
 filterDfServer(input, output, session, x = reactive(NULL),
-  default_show = TRUE, show_all = TRUE)
+  default_show = TRUE, show_all = TRUE, return_datas = FALSE)
 }
 \description{
 filterDf

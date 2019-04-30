@@ -45,11 +45,13 @@ filterDfServer <- function(input, output, session,
     message("Package 'rlang' is required to run this module")
   if (!requireNamespace(package = "lubridate"))
     message("Package 'lubridate' is required to run this module")
+  if (!requireNamespace(package = "shinyWidgets"))
+    message("Package 'shinyWidgets' is required to run this module")
 
   ns <- session$ns
   
   toReturn <- reactiveValues(expr = NULL, filtered_data = NULL, filtered = FALSE)
-  internal <- reactiveValues(filters_shown = default_show, trigger = 0, nb_x = 0)
+  internal <- reactiveValues(filters_shown = default_show, trigger = 0, nb_x = 0, all_ids = c())
   
   #############+
   ## Common ----
@@ -78,18 +80,43 @@ filterDfServer <- function(input, output, session,
       }
     })
     
-    # Init all triggers & all_filters
-    observe({
-      if (is.null(x())) {
-        all_triggers <<- reactiveValues()
-        all_filters  <<- reactiveValues()
-      } else {
+    resetX <- function() {
+      obs_mods <<- list()
+      res_mods <<- list()
+      # reset if already used
+      if (length(names(all_filters)) > 0) {
+        for (i in names(all_filters)) {
+          all_triggers[[i]] <- NULL
+          all_filters[[i]]  <- list(filter_expr = NULL, filtered_data = NULL, filtered = FALSE, values = NULL)
+        }
+      }
+      internal$nb_x <- internal$nb_x + 1
+      # internal$trigger <- internal$trigger + 1
+      internal$all_ids <- c()
+      if (!is.null(x())) {
         for (i in colnames(x())) {
           all_triggers[[i]] <- 0
           all_filters[[i]] <- list(filter_expr = NULL, filtered_data = NULL, filtered = FALSE, values = NULL)
         }
       }
-    })
+    }
+    
+    observeEvent(x(), {
+      resetX()
+    }, ignoreNULL = FALSE)
+    
+    # Init all triggers & all_filters
+    # observe({
+      # if (is.null(x())) {
+        # all_triggers <<- reactiveValues()
+        # all_filters  <<- reactiveValues()
+      # } else {
+        # for (i in colnames(x())) {
+          # all_triggers[[i]] <- 0
+          # all_filters[[i]] <- list(filter_expr = NULL, filtered_data = NULL, filtered = FALSE, values = NULL)
+        # }
+      # }
+    # })
   }
   
   #########+
@@ -115,12 +142,17 @@ filterDfServer <- function(input, output, session,
     })
     
     observeEvent(input$AB_show_filters, {
-      print("118")
-      internal$filters_shown <- !internal$filters_shown
-      # Increase trigger if filters shown
+      # Triggers management
       if (internal$filters_shown) {
-        internal$trigger <- internal$trigger + 1
+        if (show_all) {
+          # Increase global trigger if filters shown
+          internal$trigger <- internal$trigger + 1
+        } else {
+          # Increase current trigger used
+          all_triggers[[input$SI_var]] <- all_triggers[[input$SI_var]] + 1
+        }
       }
+      internal$filters_shown <- !internal$filters_shown
     })
   }
   
@@ -146,29 +178,13 @@ filterDfServer <- function(input, output, session,
                                 trigger = reactive(internal$trigger))
                                 
         obs_mods[[name]] <<- observeEvent(reactiveValuesToList(res_mods[[name]]), {
-          print("149")
           all_filters[[name]] <- reactiveValuesToList(res_mods[[name]])
         })
       }
       
       # Reset res_mods when x() gets NULL and call modules if x() not null
-      observeEvent(x(), {
-        print("156")
-        # Incremente the internal$nb_x to add new ns id
-        internal$nb_x <- internal$nb_x + 1
-        # Reset all to NULL (in case of new x())
-        # Remove observeEvents
-        obs_mods <<- list()
-        # Remove reactiveValues contained in res_mods global var
-        res_mods <<- list()
-        # Set to NULL all slots of rv all_filters
-        tmp <- isolate(reactiveValuesToList(all_filters))
-        if (length(tmp) > 0) {
-          for (i in 1:length(tmp)) {
-            name <- names(tmp)[i]
-            all_filters[[name]] <- list(filter_expr = NULL, filtered_data = NULL, filtered = FALSE, values = NULL)
-          }
-        }
+      observeEvent(internal$nb_x, {
+        req(internal$nb_x > 0)
         
         # Call modules if needed
         if (!is.null(x())) {
@@ -179,18 +195,22 @@ filterDfServer <- function(input, output, session,
             id <- paste("id", internal$nb_x, length(res_mods) + 1, sep = "_")
             all_ids <- c(all_ids, ns(id))
             addModuleServer(name = name_, x = x(), id = id)
-            
-            # call ui
-            output$ui_MODS_filters <- renderUI({
-              lapply(all_ids, function(i) {
-                ii <- i
-                filterVarUI(id = ii)
-              })
-            })
           }
-          }
+          internal$all_ids <- all_ids
+        }
       })
       
+      # call ui
+      output$ui_MODS_filters <- renderUI({
+        if (length(internal$all_ids) != 0) {
+          lapply(internal$all_ids, function(i) {
+            ii <- i
+            filterVarUI(id = ii)
+          })
+        } else {
+          NULL
+        }
+      })
     }
     
     ##################+
@@ -233,28 +253,14 @@ filterDfServer <- function(input, output, session,
       obs_mods <- list()
       
       observeEvent(input$SI_var, {
-        print("236")
+        # User change SI_var, then must re-create UI according to new default values
+        # Remember, default() is always used in a isolate not to recreate every
+        # time the user change input
         all_triggers[[input$SI_var]] <- all_triggers[[input$SI_var]] + 1
       })
       
-      observeEvent(x(), {
-        print("241")
-        # Incremente the internal$nb_x to add new ns id
-        internal$nb_x <- internal$nb_x + 1
-        # Reset all to NULL (in case of new x())
-        # Remove observeEvents
-        obs_mods <<- list()
-        # Remove reactiveValues contained in res_mods global var
-        res_mods <<- list()
-        # Set to NULL all slots of rv all_filters
-        tmp <- reactiveValuesToList(all_filters)
-        if (length(tmp) > 0) {
-          for (i in 1:length(tmp)) {
-            name <- names(tmp)[i]
-            all_filters[[name]] <- list(filter_expr = NULL, filtered_data = NULL, filtered = FALSE, values = NULL)
-          }
-        }
-        
+      observeEvent(internal$nb_x, {
+        req(internal$nb_x > 0)
         # Call modules if needed
         if (!is.null(x())) {
           for (i in colnames(x())) {
@@ -269,7 +275,6 @@ filterDfServer <- function(input, output, session,
                                   trigger = reactive(all_triggers[[ii]])
                                 )
               obs_mods[[ii]] <<- observeEvent(reactiveValuesToList(res_mods[[ii]]), {
-                print("272")
                 all_filters[[ii]] <- reactiveValuesToList(res_mods[[ii]])
               })
             })
@@ -285,7 +290,6 @@ filterDfServer <- function(input, output, session,
   {
     observe({
       tmp <- reactiveValuesToList(all_filters)
-      req(length(tmp) > 0)
       filters <- which(sapply(tmp, function(x) x$filtered))
       
       if (length(filters) == 0) {

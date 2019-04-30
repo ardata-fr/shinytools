@@ -33,10 +33,10 @@ filterVarUI <- function(id) {
 #'
 #'   server <- function(input, output) {
 #'     # Test date
-#'     res_date <- callModule(module = filterVarServer, id = "date",
-#'                x = reactive(test_date),
-#'                varname = reactive("col"),
-#'                label = reactive("col"))
+#'     res_date <-  callModule(module = filterVarServer, id = "date",
+#'                    x = reactive(test_date),
+#'                    varname = reactive("col"),
+#'                    label = reactive("col"))
 #'
 #'     observe({
 #'       req(res_date)
@@ -46,9 +46,9 @@ filterVarUI <- function(id) {
 #'
 #'     # Test logical
 #'     res_logical <- callModule(module = filterVarServer, id = "logical",
-#'                 x = reactive(test_logical),
-#'                 varname = reactive("col"),
-#'                 label = reactive("col"))
+#'                      x = reactive(test_logical),
+#'                      varname = reactive("col"),
+#'                      label = reactive("col"))
 #'
 #'     observe({
 #'       req(res_logical)
@@ -57,10 +57,10 @@ filterVarUI <- function(id) {
 #'     })
 #'
 #'     # Test factor
-#'     res_factor <- callModule(module = filterVarServer, id = "fact",
-#'                x = reactive(test_fact),
-#'                varname = reactive("Species"),
-#'                label = reactive("Species"))
+#'     res_factor <-  callModule(module = filterVarServer, id = "fact",
+#'                      x = reactive(test_fact),
+#'                      varname = reactive("Species"),
+#'                      label = reactive("Species"))
 #'
 #'     observe({
 #'       req(res_factor)
@@ -69,10 +69,10 @@ filterVarUI <- function(id) {
 #'     })
 #'
 #'     # Test character
-#'     res_char <- callModule(module = filterVarServer, id = "char",
-#'                x = reactive(test_char),
-#'                varname = reactive("Species"),
-#'                label = reactive("Species"))
+#'     res_char <-  callModule(module = filterVarServer, id = "char",
+#'                    x = reactive(test_char),
+#'                    varname = reactive("Species"),
+#'                    label = reactive("Species"))
 #'
 #'     observe({
 #'       req(res_char)
@@ -82,9 +82,9 @@ filterVarUI <- function(id) {
 #'
 #'     # Test numeric
 #'     res_num <- callModule(module = filterVarServer, id = "num",
-#'               x = reactive(test_num),
-#'               varname = reactive("Sepal.Length"),
-#'               label = reactive("Sepal.Length"))
+#'                  x = reactive(test_num),
+#'                  varname = reactive("Sepal.Length"),
+#'                  label = reactive("Sepal.Length"))
 #'
 #'     observe({
 #'       req(res_num)
@@ -96,12 +96,12 @@ filterVarUI <- function(id) {
 #'   print(shinyApp(ui, server))
 #' }
 filterVarServer <-  function(input, output, session,
-               x = reactive(NULL),
-               varname = reactive(NULL),
-               label = reactive(NULL),
-               return_datas = FALSE,
-               default = reactive(NULL),
-               trigger = reactive(NULL)) {
+                      x = reactive(NULL),
+                      varname = reactive(NULL),
+                      label = reactive(NULL),
+                      return_datas = FALSE,
+                      default = reactive(NULL),
+                      trigger = reactive(NULL)) {
     
   if (!requireNamespace(package = "rlang"))
       message("Package 'rlang' is required to run this module")
@@ -114,31 +114,31 @@ filterVarServer <-  function(input, output, session,
   ## Input ----
   ############+
   {
-      internal <- reactiveValues(
-        x = NULL, # To use
-        res = NULL, # For results
-        has_na = NULL # Add or not NA
-      )
-      
-      # Initialize internal$x & internal$res
-      observe({
-        if (is.null(x())) {
-          internal$x <- internal$res <- NULL
-        } else {
-          if (inherits(x(), "data.frame")) {
-            internal$res <- x()
-            if (varname() %in% colnames(x())) {
-              internal$x   <- x()[,varname()]
-            } else {
-              internal$x <- NULL
-            }
+    internal <- reactiveValues(
+      x = NULL, # To use
+      res = NULL, # For results
+      has_na = NULL # Add or not NA
+    )
+    
+    # Initialize internal$x & internal$res
+    observe({
+      if (is.null(x())) {
+        internal$x <- internal$res <- NULL
+      } else {
+        if (inherits(x(), "data.frame")) {
+          internal$res <- x()
+          if (varname() %in% colnames(x())) {
+            internal$x   <- x()[,varname()]
           } else {
-            tmp <- data.frame(x())
-            colnames(tmp) <- varname()
-            internal$res <- tmp
+            internal$x <- NULL
           }
+        } else {
+          tmp <- data.frame(x())
+          colnames(tmp) <- varname()
+          internal$res <- tmp
         }
-      })
+      }
+    })
   }
   
   ########+
@@ -170,11 +170,11 @@ filterVarServer <-  function(input, output, session,
           }
           button <- sliderInput(ns("ui"), label = label_, min = min_, max = max_, value = values_)
         } else if (is.character(x) || is.factor(x) || is.logical(x)) {
-          lvl <- as.character(unique(x))
+          lvl <- enc2native(as.character(unique(x)))
           if (is.null(isolate(default()))) {
             selected_ <- lvl
           } else {
-            selected_ <- isolate(default())
+            selected_ <- isolate(enc2native(default()))
           }
           button <- selectizeInput(ns("ui"), label = label_, choices = lvl, selected = selected_, multiple = TRUE)
         } else if (lubridate::is.Date(x)) {
@@ -201,7 +201,6 @@ filterVarServer <-  function(input, output, session,
         }
       }
     })
-    outputOptions(output, 'ui_DIV_filter', suspendWhenHidden = FALSE)
   }
   
   #############+
@@ -221,18 +220,18 @@ filterVarServer <-  function(input, output, session,
         if (internal$has_na) {
           x <- internal$x[!is.na(internal$x)]
           if (input$ui_na) {
-            removeNA    <- FALSE
+            na_wtd    <- "present_tokeep"
           } else {
-            removeNA    <- TRUE
+            na_wtd    <- "present_toremove"
           }
         } else {
           x <- internal$x
-          removeNA <- FALSE
+          na_wtd <- "absent"
         }
         
         if (is.numeric(x)) {
           if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
-            if (removeNA) {
+            if (na_wtd == "present_toremove") {
               expr_string <- paste0("!is.na(", varname(), ")")
             } else {
               filtered <- FALSE
@@ -240,13 +239,13 @@ filterVarServer <-  function(input, output, session,
           } else {
             values <- c(input$ui)
             expr_string <- paste(varname(), ">=", input$ui[1], "&", varname(), "<=", input$ui[2])
-            if (!removeNA) {
-              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            if (na_wtd == "present_tokeep") {
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
             }
           }
         } else if (lubridate::is.Date(x)) {
           if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
-            if (internal$has_na && removeNA) {
+            if (na_wtd == "present_toremove") {
               expr_string <- paste0("!is.na(", varname(), ")")
             } else {
               filtered <- FALSE
@@ -255,13 +254,13 @@ filterVarServer <-  function(input, output, session,
             values <- input$ui
             expr_string <-  paste(varname(), ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&",
                                   varname(), "<=", paste0("as.Date(\"", input$ui[2], "\")"))
-            if (internal$has_na && !removeNA) {
-              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            if (na_wtd == "present_tokeep") {
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
             }
           }
         } else if (is.character(x) || is.factor(x)) {
           if (all(unique(x) %in% input$ui)) {
-            if (internal$has_na && removeNA) {
+            if (na_wtd == "present_toremove") {
               expr_string <- paste0("!is.na(", varname(), ")")
             } else {
               filtered <- FALSE
@@ -269,13 +268,13 @@ filterVarServer <-  function(input, output, session,
           } else {
             values <- input$ui
             expr_string <- paste(varname(), "%in%", rlang::expr_text(rlang::expr(!!input$ui)))
-            if (!removeNA) {
-              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            if (na_wtd == "present_tokeep") {
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
             }
           }
         } else if (is.logical(x)) {
           if (length(input$ui) == 2) {
-            if (internal$has_na && removeNA) {
+            if (na_wtd == "present_toremove") {
               expr_string <- paste0("!is.na(", varname(), ")")
             } else {
               filtered <- FALSE
@@ -283,8 +282,8 @@ filterVarServer <-  function(input, output, session,
           } else {
             values <- input$ui
             expr_string <- paste(varname(), "==", input$ui)
-            if (!removeNA) {
-              expr_string <- paste(expr_string, paste0("| is.na(", varname(), ")"))
+            if (na_wtd == "present_tokeep") {
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
             }
           }
         }
