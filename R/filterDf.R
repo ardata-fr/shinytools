@@ -18,8 +18,8 @@ filterDataUI <- function(id) {
 
 #' @rdname filterData
 #' @export
-#' @title shiny UI to filte data
-#' @description A module to enable data filetering
+#' @title shiny UI to filter data
+#' @description A module to enable data filtering
 #' in shiny applications. The ui function is populated
 #' with column filters that can be manipulated by the user.
 #' The server function is returning the R expression corresponding
