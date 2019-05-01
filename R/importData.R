@@ -118,6 +118,8 @@ importDataUI <- function(id) {
 #' @importFrom shiny checkboxInput fileInput updateTextInput isTruthy
 #' @importFrom shinyWidgets dropdownButton tooltipOptions
 #' @importFrom fpeek peek_head peek_tail
+#' @importFrom openxlsx getSheetNames read.xlsx
+#' @importFrom haven read_sas
 importDataServer <- function(input, output, session,
                       forbidden_labels = reactive(NULL), default_tofact = FALSE,
                       ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload"),
@@ -216,8 +218,7 @@ importDataServer <- function(input, output, session,
       file_ext <- toupper(file_ext(internal$infile$datapath))
       common <- checkboxInput(ns("CBI_char2factor"), label = "Convert character to factor ?", value = default_tofact)
       if (file_ext %in% c("XLS", "XLSX")) {
-        requireNamespace(package = "openxlsx", quietly = TRUE)
-        sheets <- openxlsx::getSheetNames(internal$infile$datapath)
+        sheets <- getSheetNames(internal$infile$datapath)
         tags$div(
           selectInput(ns("SI_modal_excelSheets"), label = "Choose Excel sheet",
             choices = sheets),
@@ -275,7 +276,7 @@ importDataServer <- function(input, output, session,
       } else if (file_ext %in% c("XLS", "XLSX")) {
         req(input$SI_modal_excelSheets)
         tmp <- tryCatch({
-          tmp <- openxlsx::read.xlsx(xlsxFile = internal$infile$datapath,
+          tmp <- read.xlsx(xlsxFile = internal$infile$datapath,
             sheet = input$SI_modal_excelSheets,
             detectDates = TRUE)
           as.data.frame(tmp)
@@ -284,7 +285,6 @@ importDataServer <- function(input, output, session,
         })
       } else if (file_ext == "SAS7BDAT") {
         tmp <- tryCatch({
-          requireNamespace(package = "haven", quietly = TRUE)
           haven::read_sas(data_file = internal$infile$datapath)
         }, error = function(err) {
           FALSE
