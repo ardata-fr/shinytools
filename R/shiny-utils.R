@@ -9,55 +9,59 @@
 #' if (interactive()) {
 #'   options(device.ask.default = FALSE)
 #'
-#' ui <- fluidPage(
-#'   fluidRow(
-#'     column(2,
-#'       textInput("TI", label = "", placeholder = "Write something"),
-#'       textOutput("TO_ti")
-#'     ),
-#'     column(2,
-#'       selectInput("SI", label = "Choose one or multiple letters", 
-#'         choices = letters, selected = "", multiple = TRUE),
-#'       textOutput("TO_si")
-#'     ),
-#'     column(2,
-#'       actionButton("AB2", label = "Create reactiveValues"),
-#'       textOutput("TO_reactiveValues")
+#'   ui <- fluidPage(
+#'     fluidRow(
+#'       column(
+#'         2,
+#'         textInput("TI", label = "", placeholder = "Write something"),
+#'         textOutput("TO_ti")
+#'       ),
+#'       column(
+#'         2,
+#'         selectInput("SI",
+#'           label = "Choose one or multiple letters",
+#'           choices = letters, selected = "", multiple = TRUE
+#'         ),
+#'         textOutput("TO_si")
+#'       ),
+#'       column(
+#'         2,
+#'         actionButton("AB2", label = "Create reactiveValues"),
+#'         textOutput("TO_reactiveValues")
+#'       )
 #'     )
 #'   )
-#' )
 #'
-#' server <- function(input, output) {
-#'   
-#'   rv <- reactiveValues()
-#'   
-#'   output$TO_ti <- renderText({
-#'     if (filled(input$TI)) {
-#'       paste("textInput filled")
-#'     } else {
-#'       paste("textInput empty")
-#'     }
-#'   })
-#'   output$TO_si <- renderText({
-#'     if (filled(input$SI)) {
-#'       paste("selectInput filled")
-#'     } else {
-#'       paste("selectInput empty")
-#'     }
-#'   })
-#'   
-#'   output$TO_reactiveValues <- renderText({
-#'     if (filled(rv$ex)) {
-#'       paste("reactiveValues rv$ex filled")
-#'     } else {
-#'       paste("reactiveValues rv$ex empty")
-#'     }
-#'   })
-#'   
-#'   observeEvent(input$AB2, {
-#'     rv$ex <- input$AB2
-#'   })
-#' }
+#'   server <- function(input, output) {
+#'     rv <- reactiveValues()
+#'
+#'     output$TO_ti <- renderText({
+#'       if (filled(input$TI)) {
+#'         paste("textInput filled")
+#'       } else {
+#'         paste("textInput empty")
+#'       }
+#'     })
+#'     output$TO_si <- renderText({
+#'       if (filled(input$SI)) {
+#'         paste("selectInput filled")
+#'       } else {
+#'         paste("selectInput empty")
+#'       }
+#'     })
+#'
+#'     output$TO_reactiveValues <- renderText({
+#'       if (filled(rv$ex)) {
+#'         paste("reactiveValues rv$ex filled")
+#'       } else {
+#'         paste("reactiveValues rv$ex empty")
+#'       }
+#'     })
+#'
+#'     observeEvent(input$AB2, {
+#'       rv$ex <- input$AB2
+#'     })
+#'   }
 #'
 #'   print(shinyApp(ui, server))
 #' }
@@ -93,12 +97,10 @@ info_tooltip <- function(label = "", tooltip = "", label_style = "font-weight:bo
   tags$span(label_, infoButton)
 }
 
+#' @importFrom shinyWidgets prettyToggle
 naInput <- function(id) {
-  if (!requireNamespace(package = "shinyWidgets"))
-    message("Package 'shinyWidgets' is required to run this function")
-
-  shinyWidgets::prettyToggle(
-    inputId = id, 
+  prettyToggle(
+    inputId = id,
     value = TRUE,
     label_on = "NA", icon_on = icon("ok", lib = "glyphicon"),
     label_off = "NA", icon_off = icon("remove", lib = "glyphicon"),
