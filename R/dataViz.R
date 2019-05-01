@@ -1,14 +1,13 @@
-#' @export
 #' @param id namespace identifier for the module
 #' @importFrom shiny NS uiOutput req
 #' @rdname dataViewer
 #' @name dataViewer
+#' @noRd
 dataViewerUI <- function(id) {
   ns <- NS(id)
   uiOutput(ns("ui_DT_viz"))
 }
 
-#' @export
 #' @title shiny UI to view data
 #' @description A module to view data in a DataTable output. An option is available
 #' to display only first or last rows of the dataset.
@@ -43,10 +42,11 @@ dataViewerUI <- function(id) {
 #' }
 #'
 #' @name dataViewer
+#' @noRd
 dataViewerServer <- function(input, output, session, data = reactive(NULL), part = "all", style = "minimal") {
   ns <- session$ns
 
-  getViz <- function(data, part) {
+  getViewer <- function(data, part) {
     if (all(c("header", "footer") %in% part)) {
       cast_to_short_table(x = data, symbol = "...")
     } else if (part[1] == "header") {
@@ -62,7 +62,7 @@ dataViewerServer <- function(input, output, session, data = reactive(NULL), part
 
   output$DT_viz <- renderDataTable({
     req(data())
-    dat <- getViz(data = data(), part = part)
+    dat <- getViewer(data = data(), part = part)
     if (style == "minimal") {
       datatable(dat,
         rownames = FALSE,
