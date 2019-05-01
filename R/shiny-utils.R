@@ -1,4 +1,3 @@
-#' @export
 info_tooltip <- function(label = "", tooltip = "", label_style = "font-weight:bold", infoButton_style = "") {
   randomId <- paste0("tooltipID", sample(x = 1:10000, size = 1))
   infoButton <- tags$a(

@@ -1,19 +1,18 @@
 filterVarUI <- function(id) {
   ns <- NS(id)
-  
+
   fluidRow(
     column(12,
-      uiOutput(ns("ui_DIV_filter"))
+           uiOutput(ns("ui_DIV_filter"))
     )
   )
 }
 
 #' @title filterVar
+#' @noRd
 #' @examples
 #' library(shinytools)
 #' library(shiny)
-#' library(lubridate)
-#' library(rlang)
 #' if (interactive()) {
 #'   options(device.ask.default = FALSE)
 #'
@@ -95,21 +94,18 @@ filterVarUI <- function(id) {
 #'   }
 #'   print(shinyApp(ui, server))
 #' }
+#' @importFrom shiny dateRangeInput selectizeInput sliderInput
+#' @importFrom rlang expr_text expr
 filterVarServer <-  function(input, output, session,
-                      x = reactive(NULL),
-                      varname = reactive(NULL),
-                      label = reactive(NULL),
-                      return_datas = FALSE,
-                      default = reactive(NULL),
-                      trigger = reactive(NULL)) {
-    
-  if (!requireNamespace(package = "rlang"))
-      message("Package 'rlang' is required to run this module")
-  if (!requireNamespace(package = "lubridate"))
-      message("Package 'lubridate' is required to run this module")
-  
+                             x = reactive(NULL),
+                             varname = reactive(NULL),
+                             label = reactive(NULL),
+                             return_datas = FALSE,
+                             default = reactive(NULL),
+                             trigger = reactive(NULL)) {
+
   ns <- session$ns
-  
+
   ############+
   ## Input ----
   ############+
@@ -119,7 +115,7 @@ filterVarServer <-  function(input, output, session,
       res = NULL, # For results
       has_na = NULL # Add or not NA
     )
-    
+
     # Initialize internal$x & internal$res
     observe({
       if (is.null(x())) {
@@ -140,7 +136,7 @@ filterVarServer <-  function(input, output, session,
       }
     })
   }
-  
+
   ########+
   ## UI ---
   ########+
@@ -177,7 +173,7 @@ filterVarServer <-  function(input, output, session,
             selected_ <- isolate(enc2native(default()))
           }
           button <- selectizeInput(ns("ui"), label = label_, choices = lvl, selected = selected_, multiple = TRUE)
-        } else if (lubridate::is.Date(x)) {
+        } else if (inherits(x, "Date")) {
           min_ <- min(x)
           max_ <- max(x)
           if (length(isolate(default())) == 2) {
@@ -202,16 +198,16 @@ filterVarServer <-  function(input, output, session,
       }
     })
   }
-  
+
   #############+
   ## Output ----
   #############+
   {
     toReturn <- reactiveValues(filtered_data = NULL, filter_expr = NULL, filtered = FALSE, values = NULL)
-    
+
     # If no filter applied, then return filtered = FALSE
     observe({
-      if (!filled(input$ui)) {
+      if (!isTruthy(input$ui)) {
         toReturn$filter_expr <- toReturn$filtered_data <- toReturn$values <- NULL
       } else {
         filtered    <- TRUE
@@ -228,7 +224,7 @@ filterVarServer <-  function(input, output, session,
           x <- internal$x
           na_wtd <- "absent"
         }
-        
+
         if (is.numeric(x)) {
           if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
             if (na_wtd == "present_toremove") {
@@ -243,7 +239,7 @@ filterVarServer <-  function(input, output, session,
               expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
             }
           }
-        } else if (lubridate::is.Date(x)) {
+        } else if (inherits(x, "Date")) {
           if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
             if (na_wtd == "present_toremove") {
               expr_string <- paste0("!is.na(", varname(), ")")
@@ -267,7 +263,7 @@ filterVarServer <-  function(input, output, session,
             }
           } else {
             values <- input$ui
-            expr_string <- paste(varname(), "%in%", rlang::expr_text(rlang::expr(!!input$ui)))
+            expr_string <- paste(varname(), "%in%", expr_text(expr(!!input$ui)))
             if (na_wtd == "present_tokeep") {
               expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
             }
@@ -288,9 +284,9 @@ filterVarServer <-  function(input, output, session,
           }
         }
         if (!is.null(expr_string)) {
-          filter_expr <- rlang::parse_expr(expr_string)
+          filter_expr <- parse_expr(expr_string)
           if (return_datas) {
-            filters <- rlang::eval_tidy(filter_expr, data = internal$res)
+            filters <- eval_tidy(filter_expr, data = internal$res)
             filtered_data <- internal$res[filters,]
           } else {
             filtered_data <- NULL
@@ -309,7 +305,7 @@ filterVarServer <-  function(input, output, session,
         toReturn$values   <- values
       }
     })
-    
+
     return(toReturn)
   }
 }

@@ -16,5 +16,5 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: htmltools, shiny, DT, shinyWidgets, rlang
-Suggests: haven, openxlsx, lubridate, 
+Suggests: haven, openxlsx
 RoxygenNote: 6.1.1
