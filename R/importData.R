@@ -1,33 +1,37 @@
 #' @export
-#' @title Factor to character
-#' @description UI part of module import
-#' @param id Module call id
-#' @param label Label of actionLink
-#' @import shiny
+#' @param id namespace identifier for the module
+#' @importFrom htmltools div HTML tagList
+#' @importFrom shiny fluidRow column textInput reactiveValues renderUI actionButton actionLink observeEvent
+#' @rdname importData
+#' @name importData
 importDataUI <- function(id) {
   ns <- NS(id)
-  
+
   fluidRow(
-    column(12,
-      uiOutput(ns("ui_AB_import"))
+    column(
+      12,
+      jstools_dep(),
+      uiOutput(ns("ui_import"))
     )
   )
 }
 
 #' @export
-#' @title Factor to character
-#' @description Server part of module import
-#' @param input Not a real parameter, not to be set manually.
-#' @param output Not a real parameter, not to be set manually.
-#' @param session Not a real parameter, not to be set manually.
-#' @param forbidden_labels Optional reactive, forbidden labels
+#' @rdname importData
+#' @name importData
+#' @title shiny UI to import data
+#' @description A module to enable data importation
+#' in shiny applications, by clicking on a button or link action,
+#' man can open a modal window to let import dataset in shiny application.
+#' The module support CSV, Excel and SAS datasets.
+#' @param input,output,session mandatory arguments for modules to be valid. These
+#' should not to be defined as they will be handled by shiny.
+#' @param forbidden_labels Optional, reactive value, forbidden labels as a character vector
 #' @param default_tofact If default convert characters to factors. Default FALSE.
 #' @param ui_element UI element to show, either "actionButton", or "actionLink". Default "actionLink".
-#' @param ui_label Label of ui element. Default "import".
-#' @param ui_icon Icon of ui element. Default icon("upload").
-#' @import shiny
-#' @importFrom tools file_ext
-#' @importFrom utils read.csv2
+#' @param ui_label Label of ui element. Default to "import".
+#' @param ui_icon Icon of ui element. Default to icon("upload").
+#' @param labelize if TRUE a label is required to import the data
 #' @examples
 #' library(shinytools)
 #' library(shiny)
@@ -36,94 +40,98 @@ importDataUI <- function(id) {
 #'   options(device.ask.default = FALSE)
 #'
 #' ui <- fluidPage(
-#'   load_jstools(),
 #'   importDataUI(id = "id1"),
 #'   tags$hr(),
 #'   uiOutput("ui_SI_labels"),
-#'   dataVizUI(id = "id2")
+#'   dataViewerUI(id = "id2")
 #' )
-#' 
+#'
 #' server <- function(input, output) {
-#' 
+#'
 #'   all_datasets <- reactiveValues()
-#' 
+#'
 #'   datasets <- callModule(module = importDataServer, id = "id1",
 #'     forbidden_labels = reactive(names(reactiveValuesToList(all_datasets))))
-#' 
+#'
 #'   observeEvent(datasets$trigger, {
 #'     req(datasets$trigger > 0)
 #'     all_datasets[[datasets$name]] <- datasets$object
 #'   })
-#' 
+#'
 #'   output$ui_SI_labels <- renderUI({
 #'     x <- reactiveValuesToList(all_datasets)
 #'     if (length(x) > 0) {
 #'       selectInput("SI_labels", label = "Choose dataset", choices = names(x))
 #'     }
 #'   })
-#' 
-#'   callModule(module = dataVizServer, id = "id2",
+#'
+#'   callModule(module = dataViewerServer, id = "id2",
 #'     data = reactive({req(input$SI_labels);all_datasets[[input$SI_labels]]}))
 #' }
 #'
 #'   print(shinyApp(ui, server))
 #' }
+#' @importFrom tools file_ext
+#' @importFrom utils read.csv2
+#' @importFrom shiny checkboxInput fileInput modalButton modalDialog updateTextInput showModal removeModal
+#' @importFrom shiny isTruthy
 importDataServer <- function(input, output, session,
-                      forbidden_labels = reactive(NULL), default_tofact = FALSE, 
-                      ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload")) {
+                      forbidden_labels = reactive(NULL), default_tofact = FALSE,
+                      ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload"),
+                      labelize = TRUE) {
 
   ns <- session$ns
 
-  ############
-  ## Common ##
-  ############
+  label_ui_html <- HTML("<!---->")
+  if(labelize){
+    label_ui_html <- tagList(
+      div(
+        textInput(ns("ui_modal_label"),
+                label = "Label",
+                placeholder = "label for your dataset") ),
+      uiOutput(ns("ui_modal_label_warning"))
+      )
+  }
+
+  # Common ----
   {
     current   <- reactiveValues(x = NULL)
     toReturn  <- reactiveValues(object = NULL, name = NULL, trigger = 0)
     internal  <- reactiveValues(infile = NULL)
   }
-  
-  ########+
-  ## UI ---
-  ########+
+
+  # UI ----
   {
-    output$ui_AB_import <- renderUI({
+    output$ui_import <- renderUI({
       if (ui_element == "actionButton") {
-        actionButton(ns("AB_import"), label = ui_label, icon = ui_icon)
+        actionButton(ns("event_show_modal"), label = ui_label, icon = ui_icon)
       } else {
-        actionLink(ns("AB_import"), label = ui_label, icon = ui_icon)
+        actionLink(ns("event_show_modal"), label = ui_label, icon = ui_icon)
       }
     })
   }
-  
-  ###########
-  ## modal ##
-  ###########
+
+  # modal ----
   {
-    # Show the modal
-    observeEvent(input$AB_import, {
+    # Show the modal ----
+    observeEvent(input$event_show_modal, {
       # reset form
       current$x     <- NULL
       internal$infile <- NULL
 
-      # show modal
+      # show modal ----
       showModal(
         modalDialog(
           fluidRow(
             column(5,
-              uiOutput(ns("ui_DIV_modal_path")),
-              tags$br(),
-              textInput(ns("TI_modal_label"), label = "Label",
-                placeholder = "label for your dataset"),
-              uiOutput(ns("ui_DIV_modal_label_warning")),
-              tags$br(),
-              uiOutput(ns("ui_DIV_modal_options"))
+              label_ui_html,
+              uiOutput(ns("ui_modal_options"))
             ),
             column(7,
               fileInput(ns("FI_modal_file"), "Choose a file",
                 accept = c(".xlsx", ".csv", ".sas7bdat")),
               dataDimUI(id = ns("import-dim")),
-              dataVizUI(id = ns("import-viz"))
+              dataViewerUI(id = ns("import-viz"))
             )
           ),
           footer = tagList(
@@ -135,39 +143,32 @@ importDataServer <- function(input, output, session,
       )
     })
 
-    # Update internal$infile according to input$FI_modal_file
+    # Update internal$infile according to input$FI_modal_file ----
     observeEvent(input$FI_modal_file, {
       internal$infile <- input$FI_modal_file
-      # Update label according to file name
-      default_name <- tools::file_path_sans_ext(input$FI_modal_file$name)
-      updateTextInput(session, "TI_modal_label", value = default_name)
-    })
-
-    # selected file path
-    output$ui_DIV_modal_path <- renderUI({
-      if (is.null(internal$infile)) {
-        value <- "No file selected"
-      } else {
-        value <- internal$infile$datapath
+      if( labelize ){
+        # Update label according to file name
+        default_name <- tools::file_path_sans_ext(input$FI_modal_file$name)
+        updateTextInput(session, "ui_modal_label", value = default_name)
       }
-      tags$div(
-        tags$strong("Path"),
-        tags$br(),
-        tags$pre(value)
-      )
+
     })
 
-    # Label warning (already used)
-    output$ui_DIV_modal_label_warning <- renderUI({
-      if (input$TI_modal_label %in% forbidden_labels()) {
-        tags$div(class = "alert alert-warning", role = "alert",
-          "This label is already used"
-        )
+
+    # Label warning (already used) ----
+    output$ui_modal_label_warning <- renderUI({
+      if( labelize ){
+        if (input$ui_modal_label %in% forbidden_labels()) {
+          tags$div(class = "alert alert-warning", role = "alert",
+                   "This label is already used"
+          )
+        }
       }
+
     })
 
-    # Modal options
-    output$ui_DIV_modal_options <- renderUI({
+    # Modal options ----
+    output$ui_modal_options <- renderUI({
       req(internal$infile)
       file_ext <- toupper(file_ext(internal$infile$datapath))
       common <- checkboxInput(ns("CBI_char2factor"), label = "Convert character to factor ?", value = default_tofact)
@@ -197,7 +198,7 @@ importDataServer <- function(input, output, session,
       }
     })
 
-    # Update current$x according to options selected
+    # Update current$x according to options selected ----
     observe({
       req(internal$infile)
       file_ext <- toupper(file_ext(internal$infile$datapath))
@@ -243,25 +244,24 @@ importDataServer <- function(input, output, session,
       current$x <- tmp
     })
 
-    # dataset dimension
+    # dataset dimension ----
     callModule(module = dataDimServer, id = "import-dim",
           data = reactive(current$x))
 
-    # dataset viz
-    callModule(module = dataVizServer, id = "import-viz",
+    # dataset viz -----
+    callModule(module = dataViewerServer, id = "import-viz",
           data = reactive(current$x), part = c("header", "footer"))
   }
 
-  #####################
-  ## update toReturn ##
-  #####################
+  # update toReturn -----
   {
-    # Enable or disable AB_modal_import button
+    # Enable or disable AB_modal_import button ----
     observe({
-      if (!is.null(current$x) & filled(input$TI_modal_label)) {
+      label_accept <- ifelse(labelize, isTruthy(input$ui_modal_label), TRUE)
+      if (!is.null(current$x) && label_accept) {
         if (isFALSE(current$x)) {
           html_disable("AB_modal_import")
-        } else if (input$TI_modal_label %in% forbidden_labels()) {
+        } else if (labelize && input$ui_modal_label %in% forbidden_labels()) {
           html_disable("AB_modal_import")
         } else {
           html_enable("AB_modal_import")
@@ -270,11 +270,11 @@ importDataServer <- function(input, output, session,
         html_disable("AB_modal_import")
       }
     })
-    # Update to Return
+    # Update to Return -----
     observeEvent(input$AB_modal_import, {
       # toReturn
       toReturn$object  <- current$x
-      toReturn$name  <- input$TI_modal_label
+      toReturn$name  <- ifelse(labelize, input$ui_modal_label, NA_character_)
       toReturn$trigger <- toReturn$trigger + 1
       removeModal()
     })
