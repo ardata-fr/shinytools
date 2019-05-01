@@ -1,9 +1,8 @@
 #' @export
-#' @title Module dataViz UI part
-#' @description UI part of module import
 #' @param id namespace identifier for the module
 #' @importFrom shiny NS uiOutput req
 #' @rdname dataViewer
+#' @name dataViewer
 dataViewerUI <- function(id) {
   ns <- NS(id)
   uiOutput(ns("ui_DT_viz"))
@@ -43,6 +42,7 @@ dataViewerUI <- function(id) {
 #'   print(shinyApp(ui, server))
 #' }
 #'
+#' @name dataViewer
 dataViewerServer <- function(input, output, session, data = reactive(NULL), part = "all", style = "minimal") {
   ns <- session$ns
 
