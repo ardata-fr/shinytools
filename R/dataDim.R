@@ -1,11 +1,9 @@
-#' @import shiny
 dataDimUI <- function(id) {
   ns <- NS(id)
 
   uiOutput(ns("ui_DIV_dim"))
 }
 
-#' @import shiny
 dataDimServer <- function(input, output, session, data = reactive(NULL), warnIfNull = FALSE) {
   ns <- session$ns
 

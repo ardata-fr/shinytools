@@ -1,5 +1,5 @@
 #' @export
-#' @importFrom shiny getDefaultReactiveDomain tags HTML
+#' @importFrom shiny getDefaultReactiveDomain
 #' @title associate a event with an input value
 #' @description associate a click on an HTML element with an input value.
 #' The name of input value is free.
