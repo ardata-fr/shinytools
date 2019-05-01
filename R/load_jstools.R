@@ -35,10 +35,12 @@
 #'
 #' @export
 load_jstools <- function() {
+  jstools_dep()
+}
+
+jstools_dep <- function(){
   htmlDependency("shinytools",
                  "1.0.0",
                  src = system.file(package="shinytools", "static"),
                  script = "js/shinytools.js")
-
 }
-
