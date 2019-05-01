@@ -1,7 +1,7 @@
 Package: shinytools
 Type: Package
 Title: Simple 'JavaScript' Interactions in 'shiny' Applications
-Version: 0.0.1.903
+Version: 0.0.1.904
 Authors@R: c(
     person("David", "Gohel", role = c("aut", "cre"),
       email = "david.gohel@ardata.fr"), 
@@ -15,6 +15,6 @@ Description: Provides few functions to interact from a `shiny`
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: htmltools, shiny, DT, shinyWidgets, rlang
+Imports: htmltools, shiny, DT, shinyWidgets, rlang, fpeek
 Suggests: haven, openxlsx
 RoxygenNote: 6.1.1

@@ -116,6 +116,8 @@ importDataUI <- function(id) {
 #' @importFrom tools file_ext
 #' @importFrom utils read.csv2
 #' @importFrom shiny checkboxInput fileInput updateTextInput isTruthy
+#' @importFrom shinyWidgets dropdownButton tooltipOptions
+#' @importFrom fpeek peek_head peek_tail
 importDataServer <- function(input, output, session,
                       forbidden_labels = reactive(NULL), default_tofact = FALSE,
                       ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload"),
@@ -223,6 +225,20 @@ importDataServer <- function(input, output, session,
         )
       } else if (file_ext == "CSV") {
         tags$div(
+          dropdownButton(
+            p("First 6 lines:"),
+            div(tags$pre(
+              paste(peek_head(path = internal$infile$datapath, intern = TRUE, n = 6 ), collapse = "\n")
+            )),
+            p("Last 6 lines:"),
+            div(tags$pre(
+              paste(peek_tail(path = internal$infile$datapath, intern = TRUE, n = 6 ), collapse = "\n")
+            )),
+
+            circle = TRUE, status = "danger", icon = icon("eye"), size = "xs", width = "100%",
+            tooltip = tooltipOptions(title = "Click to view samples of the file")
+          ),
+
           selectInput(ns("SI_modal_sep"), label = "Separator",
             choices = c("Semicolon" = ";", "Comma" = ",", "Tab" = "\t", "Whitespace" = " "),
             selected = ","),
