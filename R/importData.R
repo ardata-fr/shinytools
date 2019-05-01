@@ -73,8 +73,7 @@ importDataUI <- function(id) {
 #' }
 #' @importFrom tools file_ext
 #' @importFrom utils read.csv2
-#' @importFrom shiny checkboxInput fileInput modalButton modalDialog updateTextInput showModal removeModal
-#' @importFrom shiny isTruthy
+#' @importFrom shiny checkboxInput fileInput updateTextInput isTruthy
 importDataServer <- function(input, output, session,
                       forbidden_labels = reactive(NULL), default_tofact = FALSE,
                       ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload"),
@@ -120,8 +119,8 @@ importDataServer <- function(input, output, session,
       internal$infile <- NULL
 
       # show modal ----
-      showModal(
-        modalDialog(
+      tingle_show(
+        tingle_dialog(
           fluidRow(
             column(5,
               label_ui_html,
@@ -136,9 +135,9 @@ importDataServer <- function(input, output, session,
           ),
           footer = tagList(
             default_disabled(actionButton(ns("AB_modal_import"), label = "Import !")),
-            modalButton("Cancel")
+            actionButton(ns("AB_modal_cancel"), label = "Cancel")
           ),
-          size = "l"
+          easy_close = FALSE
         )
       )
     })
@@ -270,13 +269,17 @@ importDataServer <- function(input, output, session,
         html_disable("AB_modal_import")
       }
     })
-    # Update to Return -----
+
+    # process button actions -----
+    observeEvent(input$AB_modal_cancel, {
+      tingle_remove()
+    })
     observeEvent(input$AB_modal_import, {
       # toReturn
       toReturn$object  <- current$x
       toReturn$name  <- ifelse(labelize, input$ui_modal_label, NA_character_)
       toReturn$trigger <- toReturn$trigger + 1
-      removeModal()
+      tingle_remove()
     })
   }
 
