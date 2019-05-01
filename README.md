@@ -3,7 +3,7 @@
 
 # shinytools
 
-<img src="https://www.ardata.fr/img/hexbin/shinytools.svg" style="width:150px;"/>
+<img src="https://www.ardata.fr/img/hexbin/shinytools.svg" style="width:150px;" width="150"/>
 shinytools brings some minor but important features in shiny
 applications by providing simple JavaScript functions to make
 interactions with the DOM easier and modules to perform data importation
