@@ -34,50 +34,92 @@ importDataUI <- function(id) {
 #' @param labelize if TRUE a label is required to import the data
 #' @examples
 #' library(shinytools)
+#' library(DT)
 #' library(shiny)
 #'
 #' if (interactive()) {
 #'   options(device.ask.default = FALSE)
 #'
-#' ui <- fluidPage(
-#'   importDataUI(id = "id1"),
-#'   tags$hr(),
-#'   uiOutput("ui_SI_labels"),
-#'   dataViewerUI(id = "id2")
-#' )
+#'   ui <- fluidPage(
+#'     load_tingle(),
+#'     importDataUI(id = "id1"),
+#'     uiOutput("ui_SI_labels"),
+#'     DT::dataTableOutput(outputId = "id2")
+#'   )
 #'
-#' server <- function(input, output) {
+#'   server <- function(input, output) {
 #'
-#'   all_datasets <- reactiveValues()
+#'     dataset <- callModule(
+#'       module = importDataServer,
+#'       id = "id1", ui_element = "actionButton",
+#'       labelize = FALSE)
 #'
-#'   datasets <- callModule(module = importDataServer, id = "id1",
-#'     forbidden_labels = reactive(names(reactiveValuesToList(all_datasets))))
-#'
-#'   observeEvent(datasets$trigger, {
-#'     req(datasets$trigger > 0)
-#'     all_datasets[[datasets$name]] <- datasets$object
-#'   })
-#'
-#'   output$ui_SI_labels <- renderUI({
-#'     x <- reactiveValuesToList(all_datasets)
-#'     if (length(x) > 0) {
-#'       selectInput("SI_labels", label = "Choose dataset", choices = names(x))
-#'     }
-#'   })
-#'
-#'   callModule(module = dataViewerServer, id = "id2",
-#'     data = reactive({req(input$SI_labels);all_datasets[[input$SI_labels]]}))
-#' }
+#'     output$id2 <- DT::renderDataTable({
+#'       req(dataset$trigger > 0)
+#'       dataset$object
+#'     })
+#'   }
 #'
 #'   print(shinyApp(ui, server))
 #' }
+#'
+#'
+#'
+#' if (interactive()) {
+#'   options(device.ask.default = FALSE)
+#'
+#'   ui <- fluidPage(
+#'     titlePanel("Import and visualize dataset"),
+#'     sidebarLayout(
+#'       sidebarPanel(
+#'         load_tingle(),
+#'         importDataUI(id = "id1"),
+#'         uiOutput("ui_SI_labels")
+#'       ),
+#'       mainPanel(
+#'         DT::dataTableOutput(outputId = "id2")
+#'       )
+#'     )
+#'   )
+#'
+#'   server <- function(input, output) {
+#'     all_datasets <- reactiveValues()
+#'
+#'     datasets <- callModule(
+#'       module = importDataServer,
+#'       id = "id1", ui_element = "actionButton",
+#'       labelize = TRUE,
+#'       forbidden_labels = reactive(names(reactiveValuesToList(all_datasets))))
+#'
+#'     observeEvent(datasets$trigger, {
+#'       req(datasets$trigger > 0)
+#'       all_datasets[[datasets$name]] <- datasets$object
+#'     })
+#'
+#'     output$ui_SI_labels <- renderUI({
+#'       x <- reactiveValuesToList(all_datasets)
+#'       if (length(x) > 0) {
+#'         selectInput("SI_labels", label = "Choose dataset", choices = names(x))
+#'       }
+#'     })
+#'
+#'     output$id2 <- DT::renderDataTable({
+#'       req(input$SI_labels)
+#'       all_datasets[[input$SI_labels]]
+#'     })
+#'   }
+#'
+#'   print(shinyApp(ui, server))
+#' }
+#'
+#'
 #' @importFrom tools file_ext
 #' @importFrom utils read.csv2
 #' @importFrom shiny checkboxInput fileInput updateTextInput isTruthy
 importDataServer <- function(input, output, session,
                       forbidden_labels = reactive(NULL), default_tofact = FALSE,
                       ui_element = "actionLink", ui_label = "Import", ui_icon = icon("upload"),
-                      labelize = TRUE) {
+                      labelize = FALSE) {
 
   ns <- session$ns
 
