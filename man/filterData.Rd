@@ -71,31 +71,4 @@ if (interactive()) {
   print(shinyApp(ui, server))
 }
 
-
-# example with dataViewerUI and dataViewerServer ----
-if (interactive()) {
-  options(device.ask.default = FALSE)
-
-  ui <- fluidPage(
-    fluidRow(
-      column(
-        width = 4,
-        filterDataUI(id = "demo")
-      ),
-      column(width = 8, dataViewerUI(id = "subsetdata"))
-    )
-  )
-
-  server <- function(input, output, session) {
-    res <- callModule(module = filterDataServer, id = "demo",
-                      x = reactive(mtcars),
-                      show_all_filters = FALSE,
-                      return_data = TRUE)
-
-    callModule(module = dataViewerServer,
-               data = reactive(res$filtered_data),
-               id = "subsetdata", part = "all", style = "minimal")
-  }
-  print(shinyApp(ui, server))
-}
 }
