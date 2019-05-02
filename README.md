@@ -160,6 +160,7 @@ if (interactive()) {
 
 ``` r
 library(shiny)
+library(DT)
 library(shinytools)
 
 if (interactive()) {
@@ -173,7 +174,7 @@ if (interactive()) {
         filterDataUI(id = "demo")
       ),
       column(width = 8, 
-             dataTableOutput(outputId = "subsetdata")
+             DT::dataTableOutput(outputId = "subsetdata")
              )
     ),
     fluidRow(
@@ -198,7 +199,7 @@ if (interactive()) {
         gsub("\\&[ ]*", "&\n\t", expr_str, fixed = FALSE)
       } else NULL
     })
-    output$subsetdata <- renderDataTable({
+    output$subsetdata <- DT::renderDataTable({
       res$filtered_data
     })
   }
