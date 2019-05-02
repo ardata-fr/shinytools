@@ -10,7 +10,7 @@ importDataUI <- function(id) {
   fluidRow(
     column(
       12,
-      jstools_dep(),
+      load_jstools(),
       uiOutput(ns("ui_import"))
     )
   )
@@ -134,7 +134,7 @@ importDataServer <- function(input, output, session,
         textInput(ns("ui_modal_label"),
                 label = "Label",
                 placeholder = "label for your dataset") ),
-      uiOutput(ns("ui_modal_label_warning"))
+        uiOutput(ns("ui_modal_label_warning"))
       )
   }
 
@@ -235,11 +235,10 @@ importDataServer <- function(input, output, session,
             div(tags$pre(
               paste(peek_tail(path = internal$infile$datapath, intern = TRUE, n = 6 ), collapse = "\n")
             )),
-
             circle = TRUE, status = "danger", icon = icon("eye"), size = "xs", width = "100%",
             tooltip = tooltipOptions(title = "Click to view samples of the file")
           ),
-
+          tags$br(),
           selectInput(ns("SI_modal_sep"), label = "Separator",
             choices = c("Semicolon" = ";", "Comma" = ",", "Tab" = "\t", "Whitespace" = " "),
             selected = ","),
@@ -292,7 +291,7 @@ importDataServer <- function(input, output, session,
       }
       # Convert characters to factors
       if (!isFALSE(tmp)) {
-        if (input$CBI_char2factor) {
+        if (isTRUE(input$CBI_char2factor) ) {
           tmp <- char2fact(tmp)
         } else {
           tmp <- fact2char(tmp)

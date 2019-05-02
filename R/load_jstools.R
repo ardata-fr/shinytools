@@ -35,7 +35,10 @@
 #'
 #' @export
 load_jstools <- function() {
-  jstools_dep()
+  tagList(
+    jstools_dep(),
+    load_tingle()
+  )
 }
 
 jstools_dep <- function(){
