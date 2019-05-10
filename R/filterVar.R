@@ -226,7 +226,7 @@ filterVarServer <-  function(input, output, session,
         }
 
         if (is.numeric(x)) {
-          if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
+          if (round(input$ui[1],2) == round(min(x),2) && round(input$ui[2],2) == round(max(x),2)) {
             if (na_wtd == "present_toremove") {
               expr_string <- paste0("!is.na(", varname(), ")")
             } else {

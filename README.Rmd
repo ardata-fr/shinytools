@@ -211,3 +211,19 @@ if (interactive()) {
   print(shinyApp(ui, server))
 }
 ```
+
+If you set the parameter `return_data = FALSE` then you can evaluate the returned call as follow :
+
+``` r
+# With base R
+filters <- eval(expr = res$expr, envir = iris)
+
+# With lazyeval
+filters <- lazyeval::lazy_eval(res$expr, data = iris)
+
+# With rlang
+filters <- rlang::eval_tidy(res$expr, data = iris)
+
+# Then subset data.frame
+iris[filters,]
+```

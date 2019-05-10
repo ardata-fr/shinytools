@@ -307,31 +307,38 @@ filterDataServer <- function(input, output, session,
 
   # return value ----
   {
+    # Reset toReturn
+    reset <- function() {
+      toReturn$expr <- NULL
+      toReturn$filtered <- FALSE
+      if (return_data) {
+        toReturn$filtered_data <- isolate(x())
+      }
+    }
+    
     observe({
       tmp <- reactiveValuesToList(all_filters)
-      filters <- which(sapply(tmp, function(x) x$filtered))
-
-      if (length(filters) == 0) {
-        toReturn$expr <- NULL
-        toReturn$filtered <- FALSE
-        if (return_data) {
-          toReturn$filtered_data <- isolate(x())
-        }
+      if (length(tmp) == 0) {
+        reset()
       } else {
-        tmp_expr <- paste(sapply(filters, function(x) {
-          tmp[[x]][["filter_expr"]]
-        }), collapse = " & ")
-        my_expr <- parse_expr(tmp_expr)
-        if (return_data) {
-          filtered_data <- eval_tidy(my_expr, data = isolate(x()))
-          filtered_data <- isolate(x())[filtered_data, ]
+        filters <- which(sapply(tmp, function(x) x$filtered))
+        if (length(filters) == 0) {
+          reset()
         } else {
-          filtered_data <- NULL
+          tmp_expr <- paste(sapply(filters, function(x) {
+            tmp[[x]][["filter_expr"]]
+          }), collapse = " & ")
+          my_expr <- parse_expr(tmp_expr)
+          if (return_data) {
+            filtered_data <- eval_tidy(my_expr, data = isolate(x()))
+            filtered_data <- isolate(x())[filtered_data, ]
+          } else {
+            filtered_data <- NULL
+          }
+          toReturn$filtered_data <- filtered_data
+          toReturn$expr <- my_expr
+          toReturn$filtered <- TRUE
         }
-
-        toReturn$filtered_data <- filtered_data
-        toReturn$expr <- my_expr
-        toReturn$filtered <- TRUE
       }
     })
   }
