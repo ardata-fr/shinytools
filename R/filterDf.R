@@ -129,19 +129,6 @@ filterDataServer <- function(input, output, session,
     observeEvent(x(), {
       resetX()
     }, ignoreNULL = FALSE)
-
-    # Init all triggers & all_filters
-    # observe({
-    # if (is.null(x())) {
-    # all_triggers <<- reactiveValues()
-    # all_filters  <<- reactiveValues()
-    # } else {
-    # for (i in colnames(x())) {
-    # all_triggers[[i]] <- 0
-    # all_filters[[i]] <- list(filter_expr = NULL, filtered_data = NULL, filtered = FALSE, values = NULL)
-    # }
-    # }
-    # })
   }
 
   # UI ----
@@ -183,9 +170,7 @@ filterDataServer <- function(input, output, session,
   # The server side is split into 2 parts : show all filters and show one
   if (show_all_filters) {
 
-    #################### +
-    ## Modules calls ----
-    #################### +
+    # Modules calls ----
     {
       # This list in global contains modules output
       res_mods <- list()
@@ -315,7 +300,7 @@ filterDataServer <- function(input, output, session,
         toReturn$filtered_data <- isolate(x())
       }
     }
-    
+
     observe({
       tmp <- reactiveValuesToList(all_filters)
       if (length(tmp) == 0) {

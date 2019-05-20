@@ -209,7 +209,7 @@ filterVarServer <-  function(input, output, session,
     observe({
       if (!isTruthy(input$ui)) {
         toReturn$filter_expr <- toReturn$filtered_data <- toReturn$values <- NULL
-      } else {
+      } else {  
         filtered    <- TRUE
         expr_string <- NULL
         values      <- NULL
@@ -224,62 +224,63 @@ filterVarServer <-  function(input, output, session,
           x <- internal$x
           na_wtd <- "absent"
         }
-
+        # Use `varname` instead of varname in case varname has special character
+        varname_call <- paste0("`", varname(), "`")
         if (is.numeric(x)) {
           if (round(input$ui[1],2) == round(min(x),2) && round(input$ui[2],2) == round(max(x),2)) {
             if (na_wtd == "present_toremove") {
-              expr_string <- paste0("!is.na(", varname(), ")")
+              expr_string <- paste0("!is.na(", varname_call, ")")
             } else {
               filtered <- FALSE
             }
           } else {
             values <- c(input$ui)
-            expr_string <- paste(varname(), ">=", input$ui[1], "&", varname(), "<=", input$ui[2])
+            expr_string <- paste(varname_call, ">=", input$ui[1], "&", varname_call, "<=", input$ui[2])
             if (na_wtd == "present_tokeep") {
-              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname_call, ")"), ")")
             }
           }
         } else if (inherits(x, "Date")) {
           if (input$ui[1] == min(x) && input$ui[2] == max(x)) {
             if (na_wtd == "present_toremove") {
-              expr_string <- paste0("!is.na(", varname(), ")")
+              expr_string <- paste0("!is.na(", varname_call, ")")
             } else {
               filtered <- FALSE
             }
           } else {
             values <- input$ui
-            expr_string <-  paste(varname(), ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&",
-                                  varname(), "<=", paste0("as.Date(\"", input$ui[2], "\")"))
+            expr_string <-  paste(varname_call, ">=", paste0("as.Date(\"", input$ui[1], "\")"), "&",
+                                  varname_call, "<=", paste0("as.Date(\"", input$ui[2], "\")"))
             if (na_wtd == "present_tokeep") {
-              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname_call, ")"), ")")
             }
           }
         } else if (is.character(x) || is.factor(x)) {
           if (all(unique(x) %in% input$ui)) {
             if (na_wtd == "present_toremove") {
-              expr_string <- paste0("!is.na(", varname(), ")")
+              expr_string <- paste0("!is.na(", varname_call, ")")
             } else {
               filtered <- FALSE
             }
           } else {
             values <- input$ui
-            expr_string <- paste(varname(), "%in%", expr_text(expr(!!input$ui)))
+            expr_string <- paste(varname_call, "%in%", expr_text(expr(!!input$ui)))
             if (na_wtd == "present_tokeep") {
-              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname_call, ")"), ")")
             }
           }
         } else if (is.logical(x)) {
           if (length(input$ui) == 2) {
             if (na_wtd == "present_toremove") {
-              expr_string <- paste0("!is.na(", varname(), ")")
+              expr_string <- paste0("!is.na(", varname_call, ")")
             } else {
               filtered <- FALSE
             }
           } else {
             values <- input$ui
-            expr_string <- paste(varname(), "==", input$ui)
+            expr_string <- paste(varname_call, "==", input$ui)
             if (na_wtd == "present_tokeep") {
-              expr_string <- paste("(", expr_string, paste0("| is.na(", varname(), ")"), ")")
+              expr_string <- paste("(", expr_string, paste0("| is.na(", varname_call, ")"), ")")
             }
           }
         }
