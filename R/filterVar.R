@@ -124,7 +124,7 @@ filterVarServer <-  function(input, output, session,
         if (inherits(x(), "data.frame")) {
           internal$res <- x()
           if (varname() %in% colnames(x())) {
-            internal$x   <- x()[,varname()]
+            internal$x   <- x()[, varname(), drop = TRUE]
           } else {
             internal$x <- NULL
           }
@@ -164,7 +164,13 @@ filterVarServer <-  function(input, output, session,
           } else {
             values_ <- c(min_, max_)
           }
-          button <- sliderInput(ns("ui"), label = label_, min = min_, max = max_, value = values_)
+          button <- sliderInput(
+            inputId = ns("ui"),
+            label = label_,
+            min = min_, max = max_,
+            value = values_,
+            round = FALSE
+          )
         } else if (is.character(x) || is.factor(x) || is.logical(x)) {
           lvl <- enc2native(as.character(unique(x)))
           if (is.null(isolate(default()))) {
@@ -209,7 +215,7 @@ filterVarServer <-  function(input, output, session,
     observe({
       if (!isTruthy(input$ui)) {
         toReturn$filter_expr <- toReturn$filtered_data <- toReturn$values <- NULL
-      } else {  
+      } else {
         filtered    <- TRUE
         expr_string <- NULL
         values      <- NULL
@@ -235,7 +241,13 @@ filterVarServer <-  function(input, output, session,
             }
           } else {
             values <- c(input$ui)
-            expr_string <- paste(varname_call, ">=", input$ui[1], "&", varname_call, "<=", input$ui[2])
+            if (round(input$ui[1],2) != round(min(x),2) && round(input$ui[2],2) != round(max(x),2)) {
+              expr_string <- paste(varname_call, ">=", input$ui[1], "&", varname_call, "<=", input$ui[2])
+            } else if (round(input$ui[1],2) != round(min(x),2)) {
+              expr_string <- paste(varname_call, ">=", input$ui[1])
+            } else if (round(input$ui[2],2) != round(max(x),2)) {
+              expr_string <- paste(varname_call, "<=", input$ui[2])
+            }
             if (na_wtd == "present_tokeep") {
               expr_string <- paste("(", expr_string, paste0("| is.na(", varname_call, ")"), ")")
             }
