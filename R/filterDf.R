@@ -65,6 +65,9 @@ filterDataUI <- function(id) {
 #' should not to be defined as they will be handled by shiny.
 #' @param x the input data.frame to be filtered. It must be a reactive
 #' value.
+#' @param domain a list containing domain data for one or more columns. It must be
+#' a list with components min and max if numeric, first and last date if Date, list
+#' of levels or character values if character or factor.
 #' @param show_all_filters if TRUE, all filters UI are shown. If FALSE, a compact UI
 #' is displayed containing a select box to choose a variable filter and a dynamic
 #' filter corresponding to the filter to display.
@@ -73,8 +76,11 @@ filterDataUI <- function(id) {
 #' @param return_data whether the filtered dataset should be also returned
 #' in the reactive value returned by the module.
 filterDataServer <- function(input, output, session,
-                             x = reactive(NULL), default_show = TRUE,
-                             show_all_filters = TRUE, return_data = FALSE) {
+                             x = reactive(NULL),
+                             domain = list(),
+                             default_show = TRUE,
+                             show_all_filters = TRUE,
+                             return_data = FALSE) {
   ns <- session$ns
 
   toReturn <- reactiveValues(expr = NULL, filtered_data = NULL, filtered = FALSE)
@@ -178,11 +184,15 @@ filterDataServer <- function(input, output, session,
 
       # This function set the server side and returns the ui side of module filterVar
       addModuleServer <- function(name, x, id) {
+        domain_ <- list()
+        if(!is.null(domain[[name]]))
+          domain_ <- domain[[name]]
         res_mods[[name]] <<- callModule(
           module = filterVarServer, id = id,
           x = reactive(x[, name, drop = FALSE]),
           varname = reactive(name),
           label = reactive(name),
+          domain = domain_,
           return_data = return_data,
           default = reactive(res_mods[[name]][["values"]]),
           trigger = reactive(internal$trigger)
@@ -271,10 +281,14 @@ filterDataServer <- function(input, output, session,
           for (i in colnames(x())) {
             local({
               ii <- i
+              domain_ <- list()
+              if(!is.null(domain[[ii]]))
+                domain_ <- domain[[ii]]
+
               res_mods[[ii]] <<- callModule(
                 module = filterVarServer, id = paste("id", internal$nb_x, ii, sep = "_"),
                 x = reactive(isolate(x())[, ii, drop = FALSE]),
-                varname = reactive(ii),
+                varname = reactive(ii), domain = domain_,
                 label = reactive(ii),
                 return_data = return_data,
                 default = reactive(all_filters[[ii]][["values"]]),

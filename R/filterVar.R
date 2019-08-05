@@ -102,6 +102,7 @@ filterVarServer <-  function(input, output, session,
                              label = reactive(NULL),
                              return_datas = FALSE,
                              default = reactive(NULL),
+                             domain = list(),
                              trigger = reactive(NULL)) {
 
   ns <- session$ns
@@ -157,8 +158,14 @@ filterVarServer <-  function(input, output, session,
           label_ <- label()
         }
         if (is.numeric(x)) {
-          min_ <- min(x)
-          max_ <- max(x)
+
+          if( length(domain) > 0 ){
+            min_ <- domain[["min"]]
+            max_ <- domain[["max"]]
+          } else {
+            min_ <- min(x)
+            max_ <- max(x)
+          }
           if (length(isolate(default())) == 2) {
             values_ <- isolate(default())
           } else {
@@ -174,8 +181,15 @@ filterVarServer <-  function(input, output, session,
           }
           button <- selectizeInput(ns("ui"), label = label_, choices = lvl, selected = selected_, multiple = TRUE)
         } else if (inherits(x, "Date")) {
-          min_ <- min(x)
-          max_ <- max(x)
+
+          if( length(domain) > 0 ){
+            min_ <- domain[["min"]]
+            max_ <- domain[["max"]]
+          } else {
+            min_ <- min(x)
+            max_ <- max(x)
+          }
+
           if (length(isolate(default())) == 2) {
             start_ <- isolate(default())[1]
             end_   <- isolate(default())[2]
@@ -209,7 +223,7 @@ filterVarServer <-  function(input, output, session,
     observe({
       if (!isTruthy(input$ui)) {
         toReturn$filter_expr <- toReturn$filtered_data <- toReturn$values <- NULL
-      } else {  
+      } else {
         filtered    <- TRUE
         expr_string <- NULL
         values      <- NULL

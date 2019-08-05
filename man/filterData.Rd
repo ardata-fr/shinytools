@@ -8,7 +8,8 @@
 filterDataUI(id)
 
 filterDataServer(input, output, session, x = reactive(NULL),
-  default_show = TRUE, show_all_filters = TRUE, return_data = FALSE)
+  domain = list(), default_show = TRUE, show_all_filters = TRUE,
+  return_data = FALSE)
 }
 \arguments{
 \item{id}{namespace identifier for the module}
@@ -18,6 +19,10 @@ should not to be defined as they will be handled by shiny.}
 
 \item{x}{the input data.frame to be filtered. It must be a reactive
 value.}
+
+\item{domain}{a list containing domain data for one or more columns. It must be
+a list with components min and max if numeric, first and last date if Date, list
+of levels or character values if character or factor.}
 
 \item{default_show}{should the filters be expanded when UI is is shown first. If
 FALSE, the UIs showing filters are hidden.}
