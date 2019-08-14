@@ -15,5 +15,5 @@ Description: Provides few functions to interact from a `shiny`
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: htmltools, shiny, DT, shinyWidgets, rlang, fpeek, openxlsx, haven
+Imports: htmltools, shiny, DT, shinyWidgets, rlang, fpeek, openxlsx, haven, utils
 RoxygenNote: 6.1.1
