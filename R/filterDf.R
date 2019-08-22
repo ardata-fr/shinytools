@@ -135,6 +135,10 @@ filterDataServer <- function(input, output, session,
     observeEvent(x(), {
       resetX()
     }, ignoreNULL = FALSE)
+
+    observeEvent(input$AB_reset, {
+      resetX()
+    }, ignoreNULL = FALSE)
   }
 
   # UI ----
@@ -154,7 +158,8 @@ filterDataServer <- function(input, output, session,
         class = "list-inline",
         tags$li(paste(nb_filters(), "filter(s) applied")),
         tags$li(info_tooltip(tooltip = paste(name_filters(), collapse = ", "))),
-        tags$li(AB)
+        tags$li(AB),
+        tags$li(actionButton(ns("AB_reset"), label = NULL, icon = icon("trash")))
       )
     })
 
