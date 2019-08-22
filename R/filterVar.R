@@ -162,16 +162,18 @@ filterVarServer <-  function(input, output, session,
           if( length(domain) > 0 ){
             min_ <- domain[["min"]]
             max_ <- domain[["max"]]
+            step <- domain[["step"]]
           } else {
             min_ <- min(x)
             max_ <- max(x)
+            step <- NULL
           }
           if (length(isolate(default())) == 2) {
             values_ <- isolate(default())
           } else {
             values_ <- c(min_, max_)
           }
-          button <- sliderInput(ns("ui"), label = label_, min = min_, max = max_, value = values_)
+          button <- sliderInput(ns("ui"), label = label_, min = min_, max = max_, value = values_, step = step)
         } else if (is.character(x) || is.factor(x) || is.logical(x)) {
           lvl <- enc2native(as.character(unique(x)))
           if (is.null(isolate(default()))) {
