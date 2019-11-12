@@ -7,6 +7,8 @@
 #' \code{html_set_visible} will make an element visible.
 #' \code{html_set_hidden} will hide an element.
 #' @param id shiny input id
+#' @param protect_id wether to process shiny input id with
+#' function \code{session$ns()} or not.
 #' @family javascript functions
 #' @examples
 #' library(shinytools)
@@ -49,9 +51,11 @@
 #'
 #'   print(shinyApp(ui, server))
 #' }
-html_toogle <- function(id){
+html_toogle <- function(id, protect_id = FALSE){
   session <- getDefaultReactiveDomain()
-  id <- get_session_id(session, id)
+  if( !protect_id ){
+    id <- get_session_id(session, id)
+  }
   session$sendCustomMessage(
     type = 'html_toogle',
     message = list(id = id)
@@ -61,7 +65,7 @@ html_toogle <- function(id){
 
 #' @export
 #' @rdname html_toogle
-html_set_visible <- function(id,  protect_id = FALSE){
+html_set_visible <- function(id, protect_id = FALSE){
   session <- getDefaultReactiveDomain()
   if( !protect_id ){
     id <- get_session_id(session, id)

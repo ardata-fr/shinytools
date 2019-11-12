@@ -6,7 +6,7 @@
 \alias{html_set_hidden}
 \title{Display or hide an element}
 \usage{
-html_toogle(id)
+html_toogle(id, protect_id = FALSE)
 
 html_set_visible(id, protect_id = FALSE)
 
@@ -14,6 +14,9 @@ html_set_hidden(id, protect_id = FALSE)
 }
 \arguments{
 \item{id}{shiny input id}
+
+\item{protect_id}{wether to process shiny input id with
+function \code{session$ns()} or not.}
 }
 \description{
 \code{html_toogle} will display an element if hidden or hide it
