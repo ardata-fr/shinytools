@@ -61,9 +61,11 @@ html_toogle <- function(id){
 
 #' @export
 #' @rdname html_toogle
-html_set_visible <- function(id){
+html_set_visible <- function(id,  protect_id = FALSE){
   session <- getDefaultReactiveDomain()
-  id <- get_session_id(session, id)
+  if( !protect_id ){
+    id <- get_session_id(session, id)
+  }
   session$sendCustomMessage(
     type = 'html_set_visible',
     message = list(id = id)
@@ -73,9 +75,11 @@ html_set_visible <- function(id){
 
 #' @export
 #' @rdname html_toogle
-html_set_hidden <- function(id){
+html_set_hidden <- function(id, protect_id = FALSE){
   session <- getDefaultReactiveDomain()
-  id <- get_session_id(session, id)
+  if( !protect_id ){
+    id <- get_session_id(session, id)
+  }
   session$sendCustomMessage(
     type = 'html_set_hidden',
     message = list(id = id)

@@ -1,7 +1,7 @@
 Package: shinytools
 Type: Package
 Title: Simple 'JavaScript' Interactions in 'shiny' Applications
-Version: 0.0.3.003
+Version: 0.0.3.004
 Authors@R: c(
     person("David", "Gohel", role = c("aut", "cre"),
       email = "david.gohel@ardata.fr"), 

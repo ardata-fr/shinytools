@@ -146,19 +146,19 @@ function html_toogle(id){
   }
 }
 function html_set_visible(id){
+  var x = document.getElementById(id);
   if( !x ){
     console.warn("could not find any element with id: " + id);
     return;
   }
-  var x = document.getElementById(id);
   x.style.display = null;
 }
 function html_set_hidden(id){
+  var x = document.getElementById(id);
   if( !x ){
     console.warn("could not find any element with id: " + id);
     return;
   }
-  var x = document.getElementById(id);
   x.style.display = "none";
 }
 

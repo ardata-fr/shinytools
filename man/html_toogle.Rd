@@ -8,9 +8,9 @@
 \usage{
 html_toogle(id)
 
-html_set_visible(id)
+html_set_visible(id, protect_id = FALSE)
 
-html_set_hidden(id)
+html_set_hidden(id, protect_id = FALSE)
 }
 \arguments{
 \item{id}{shiny input id}
